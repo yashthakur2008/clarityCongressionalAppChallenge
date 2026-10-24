@@ -1,3 +1,5 @@
+> **Historical DAHacks material, not the CAC video script.** The 2026 Congressional App Challenge requires a public 1–3 minute video. Use [the current checklist](demo.md) and [judge video outline](JUDGES.md#suggested-cac-video-13-minutes).
+
 # Clarity: four-minute presentation + two-minute Q&A
 
 Use **Clarity** consistently unless the team confirms a different registered project title. StepSense/MyEyes are historical project names; `Clarity V2 Test` is the native experimental bundle label. This is a rehearsal script, not evidence of an installed/validated judging-phone build or a submitted entry.

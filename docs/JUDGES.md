@@ -1,6 +1,6 @@
 # Judge guide: StepSense / Clarity
 
-**Latest startup update (#37):** see the [model-loading acceptance record](MODEL_LOADING_ACCEPTANCE.md) for current code, browser deployment and explicit physical-device limits. Earlier revision/build observations below are historical.
+**Current CAC release status, October 24:** the [readiness report](SUBMISSION_READINESS.md) supersedes historical acceptance counts below. Audit of `8f48b3c` found 17 frontend test failures, including model-first startup/cancellation regressions. The [model-loading record](MODEL_LOADING_ACCEPTANCE.md) describes intended/earlier behavior, not a fresh acceptance result for this checkout. The frontend partner is responsible for repairs; no final deployed release is yet pinned.
 
 A camera-based object-alert prototype exploring how everyday phones can provide visual, spoken, sound, and supported haptic cues. This is **not a navigation aid certified for safety**. Demonstrate it stationary, not while walking into obstacles or traffic.
 
@@ -41,16 +41,16 @@ Open **http://127.0.0.1:5180/?detector=backend**. This deliberately uploads fram
 
 Do not confuse the Node API with the Cloudflare API: the [Worker](../worker/README.md) uses different hosted models, returns coarse regions rather than bounding boxes, and has documented high latency. Its historical measurements are not performance claims for the current browser or phone.
 
-## Suggested two-minute presentation
+## Suggested CAC video, 1–3 minutes
 
 | Time | Show and explain |
 | --- | --- |
-| 0:00–0:20 | **Modern Life:** exploring accessible awareness cues on the phone people already carry, with explicit safety boundaries. |
-| 0:20–1:05 | **Functionality:** Start, actual live result/status, alert preferences, and Stop. Distinguish camera preview from a confirmed inference result. If live detection fails, disclose it and use the labeled walkthrough only as a fallback. |
-| 1:05–1:30 | **Originality:** the team's integration of local inference, image-zone alert policy, accessibility controls, and experimental depth/PiP work. Credit pretrained models and libraries in [ATTRIBUTION.md](../ATTRIBUTION.md). Do not present third-party models as invented here. |
-| 1:30–2:00 | **Presentation:** explain the browser/native/backend split, what was verified, and the next device tests. Show limitations rather than hiding empty results or latency. |
+| 0:00–0:20 | Name every participant and the app, state its purpose in one sentence and identify its target audience. |
+| 0:20–1:30 | Show the final release actually detecting an object, selected feedback, and Stop. Clearly distinguish simulations from actual inference. |
+| 1:30–2:15 | Explain tools/languages and the students' own technical contributions. Credit pretrained models and disclose AI assistance. |
+| 2:15–2:45 | Explain one real technical challenge/learning and the limitations. Leave margin below the three-minute maximum. |
 
-Functionality, originality, theme (**Modern Life**), and presentation each account for **25%** of the recorded rubric. The recorded deadline is **October 17, 2026, 2:00 PM PDT**. See [submission checklist](demo.md) and [official event rules](https://dahacks5.devpost.com/rules). This guide does not predict judging outcomes.
+Upload the 1–3 minute video to **YouTube or Vimeo with public visibility** and verify playback logged out. The deadline is **October 26, 2026 at 9:00 AM PDT / 12:00 PM EDT**. See [the CAC checklist](demo.md). Judging considers idea quality, implementation including user experience/design, and demonstrated coding skill, without the inherited hackathon's equal weighting or required theme. Students must review actual application and district-specific instructions.
 
 ## Honest limitations and privacy boundaries
 
@@ -74,7 +74,7 @@ Root tests aggregate backend, frontend, and Worker suites. Native checks are sep
 
 For code navigation, use the [root runtime map](../README.md#which-runtime-am-i-using), [API contract](api.md), [native judge guide](../samples/ios/JUDGES.md), and [model provenance](../samples/ios/MyEyes/OfflineDetector/PROVENANCE.md). Older design notes and historical benchmark results may describe different model revisions or planned features. Check the runtime map before applying their claims.
 
-### Current local integration evidence, October 17 UTC
+### Historical local integration evidence, October 17 UTC
 
 The restored COCO browser integration passed 27 backend, 206 frontend, 39 Worker and 56 native tests. Real bundled COCO-SSD inference and a fresh offline reload passed in isolated Chrome 155 with a licensed positive fixture. Synthetic-camera Start/Stop/restart completed real inference frames without uploads. A separate headful native-browser PiP check verified live hidden preview, inference pause, foreground resume and camera release; that lifecycle check uses a deterministic detector adapter. The integrated iOS source also compiled unsigned for generic iOS. These local checks do not establish physical-phone acceptance. Separate hosted preview checks and exact deployment identity are recorded above; the production API remains unchanged.
 

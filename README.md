@@ -1,8 +1,10 @@
-# Clarity · DAHacks26
+# Clarity · Congressional App Challenge 2026
 
-A camera-based obstacle alert **prototype** for De Anza Hacks 5.0, October 16–17, 2026. StepSense and Clarity names both remain in the app and repository.
+A camera-based obstacle alert **prototype** being prepared for the 2026 Congressional App Challenge, based on the earlier DAHacks project. Eligibility, inherited-work rights and student contributions require team confirmation. StepSense and Clarity names remain in historical materials.
 
-**[Judge quick start and demo guide](docs/JUDGES.md)** · [Native iPhone judge guide](samples/ios/JUDGES.md) · [Devpost](https://dahacks5.devpost.com/) · [Rules](https://dahacks5.devpost.com/rules) · [Schedule](https://dahacks5.devpost.com/details/dates)
+**[Judge quick start and demo guide](docs/JUDGES.md)** · [Native iPhone judge guide](samples/ios/JUDGES.md) · [CAC checklist](docs/demo.md) · [Submission readiness](docs/SUBMISSION_READINESS.md) · [Official 2026 rules](https://www.congressionalappchallenge.us/wp-content/uploads/2026/05/2026-CAC-Rules.pdf)
+
+> **October 24 release audit:** frontend regression tests currently fail. The canonical deployed release is not yet selected with the frontend partner. Existing demo links are previews, not verified final CAC releases. See [readiness](docs/SUBMISSION_READINESS.md) before recording.
 
 ## Try the browser app
 
@@ -69,6 +71,6 @@ npm run test:native
 - `tests/e2e/`: [manual cross-app acceptance checklist](tests/e2e/README.md).
 - `infra/`: deployment notes. `.github/`: contribution checklist.
 
-Recorded submission deadline: **October 17, 2026 at 2:00 PM PDT**. The rubric weights functionality, originality, **Modern Life** theme, and presentation equally at **25% each**. See [demo/submission checklist](docs/demo.md), [team workflow](docs/team.md), and [attribution](ATTRIBUTION.md). Confirm conflicting eligibility/team-size wording with organizers. No accuracy or competition outcome is guaranteed.
+Submission deadline: **October 26, 2026 at 9:00 AM PDT / 12:00 PM EDT**. Target Sunday evening submission. CAC considers idea quality, implementation/user experience and coding skill; the old Modern Life theme and 25%-each rubric do not apply. See the [requirements checklist](docs/demo.md), [readiness report](docs/SUBMISSION_READINESS.md), [team workflow](docs/team.md) and [attribution](ATTRIBUTION.md). The required video is **public on YouTube/Vimeo and 1–3 minutes**. Full AI disclosure and significant student contributions are required. No submission or eligibility approval is claimed.
 
 Never commit credentials, personal data, local environment files, or generated Wrangler state. The root ignore excludes `worker/.wrangler/`; removing it from tracking does not erase earlier Git history.
