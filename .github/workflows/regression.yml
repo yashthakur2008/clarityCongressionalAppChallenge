@@ -1,0 +1,34 @@
+name: App regression checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install locked backend dependencies
+        id: install
+        run: npm ci --prefix backend
+      - name: Check JavaScript syntax
+        run: npm run check
+      - name: Run aggregate regression tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm test
+      # The aggregate script stops at a frontend failure before reaching Worker tests.
+      - name: Run Worker tests if an earlier check failed
+        if: ${{ failure() && steps.install.outcome == 'success' }}
+        run: npm --prefix worker test
