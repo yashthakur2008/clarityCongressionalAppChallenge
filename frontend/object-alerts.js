@@ -126,6 +126,7 @@ export function createObjectAlerts({ platform = globalThis, readPreferences = ()
   async function send(message, { test = false } = {}) {
     const signal = controller.signal;
     const prefs = readPreferences();
+    const soundGeneration = customSoundGeneration;
     const notifications = () => readPreferences().notifications === true;
     const soundTask = playSound(prefs, signal);
     let vibrationValue = false;
@@ -145,7 +146,10 @@ export function createObjectAlerts({ platform = globalThis, readPreferences = ()
     if (signal.aborted) return { notification: false, vibration: false };
     // Preserve the notification/vibration API for callers without sound preferences.
     const delivery = { notification, vibration, ...(prefs.sound !== undefined ? { sound } : {}) };
-    onDelivery(delivery);
+    // A replaced custom-only attempt must not clear a newer sound status.
+    // Independent notification/vibration deliveries still belong to this send.
+    const supersededSound = prefs.sound && prefs.soundPreset === 'custom' && soundGeneration !== customSoundGeneration;
+    if (!supersededSound || notification || vibration) onDelivery(delivery);
     return delivery;
   }
   function resetCustomSound() {

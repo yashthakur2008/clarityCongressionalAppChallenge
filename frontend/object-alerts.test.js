@@ -291,3 +291,37 @@ test('custom reset does not cancel pending notification or vibration delivery', 
   assert.equal(f.notices.length, 1);
   assert.deepEqual(f.vibrations, []);
 });
+
+for (const finishOld of ['success', 'failure']) {
+  test(`superseded custom ${finishOld} cannot overwrite a newer successful delivery status`, async () => {
+    const f = customSoundFixture();
+    const old = f.alerts.send('Old'); const a = await f.nextDecode();
+    f.alerts.resetCustomSound(); f.setStored('B');
+    const fresh = f.alerts.send('Fresh'); const b = await f.nextDecode();
+    b.resolve({ label: 'B', duration: .1 }); await fresh;
+    if (finishOld === 'success') a.resolve({ label: 'A', duration: .1 });
+    else a.reject(new Error('Superseded decode failed'));
+    assert.deepEqual(await old, { notification: false, vibration: false, sound: false });
+    assert.deepEqual(f.deliveries, [{ notification: false, vibration: false, sound: true }]);
+  });
+}
+
+for (const channel of ['notification', 'vibration']) {
+  test(`superseded custom decode still reports independent ${channel} delivery`, async () => {
+    const f = customSoundFixture();
+    if (channel === 'notification') {
+      f.prefs.notifications = true;
+      f.platform.Notification = class { static permission = 'granted'; };
+    } else {
+      f.prefs.vibration = true;
+      f.platform.navigator = { vibrate: () => true };
+    }
+    const pending = f.alerts.send('Independent outputs'); const a = await f.nextDecode();
+    f.alerts.resetCustomSound(); a.resolve({ label: 'A', duration: .1 });
+    const result = await pending;
+    assert.equal(result[channel], true);
+    assert.equal(result.sound, false);
+    assert.deepEqual(f.deliveries, [result]);
+    assert.deepEqual(f.played, []);
+  });
+}
