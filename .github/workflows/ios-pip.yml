@@ -31,6 +31,10 @@ jobs:
           -derivedDataPath DerivedData
           CODE_SIGNING_ALLOWED=NO
           build
+      - name: Verify compiled app assets and icon metadata
+        env:
+          CLARITY_BUILT_APP: DerivedData/Build/Products/Debug-iphonesimulator/Clarity.app
+        run: node --test samples/ios/tests/app-icon.test.mjs
       - name: Upload simulator app
         uses: actions/upload-artifact@v6
         with:
