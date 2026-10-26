@@ -574,6 +574,7 @@
       const scrollRevealTargets = [...document.querySelectorAll(
         "#home > .eyebrow, #home > h1, #home > .intro, #home .forum-section, #camera .camera-actions, #camera .status-panel, #camera .readings, #camera .speech-controls, #camera .camera-feature details, #settings .page-intro-card, #settings .card > .section-title, #settings .mode-switch, #settings .mode-description, #settings .setting-row, #settings .color-vision-note, #settings .custom-sound-row, #settings .controls, #settings .install-card, #settings .device-access-row"
       )];
+      const settingsRevealTargets = scrollRevealTargets.filter((element) => element.closest("#settings"));
       scrollRevealTargets.forEach((element, index) => {
         element.classList.add("scroll-reveal");
         element.style.setProperty("--scroll-reveal-delay", `${(index % 4) * 45}ms`);
