@@ -1,6 +1,6 @@
 # Judge guide: StepSense / Clarity
 
-**Current CAC release status, October 24:** the [readiness report](SUBMISSION_READINESS.md) supersedes historical acceptance counts below. Audit of `8f48b3c` found 17 frontend test failures, including model-first startup/cancellation regressions. The [model-loading record](MODEL_LOADING_ACCEPTANCE.md) describes intended/earlier behavior, not a fresh acceptance result for this checkout. The frontend partner is responsible for repairs; no final deployed release is yet pinned.
+**Current CAC release status, October 26:** [PR #20](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/pull/20) fixes the 17 frontend regressions found in the October 24 audit. Actual Chrome onboarding, bundled-model startup, cancellation/retry, Stop/navigation and offline restart passed with a virtual camera. See the [current evidence and remaining gates](SUBMISSION_READINESS.md). No final deployed revision or physical-device acceptance is yet certified. Historical counts below do not describe this sprint.
 
 A camera-based object-alert prototype exploring how everyday phones can provide visual, spoken, sound, and supported haptic cues. This is **not a navigation aid certified for safety**. Demonstrate it stationary, not while walking into obstacles or traffic.
 

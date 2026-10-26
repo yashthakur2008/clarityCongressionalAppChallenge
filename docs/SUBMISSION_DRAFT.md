@@ -35,7 +35,7 @@ Complete privately where needed, then include appropriate non-sensitive details 
 | Each entering student | Fill with their actual contribution | Explain specific implementation decisions | Relevant commits/files, not commit counts alone | No, pending review |
 | Earlier project contributors | Identify inherited work and permissions | Distinguish reuse from new work | Upstream history and rights confirmation | No, pending review |
 | AI tools actually used | Identify tools and exact roles: code/tests/docs/research/assets as applicable | Explain human contribution, review and verification | Actual records, not guesses | No, pending review |
-| Jcode assistance in this submission-preparation session | Repository audit, issue drafting, requirement research, documentation/CI and native-test correction preparation | Students must review and understand any adopted changes | Submission-readiness PR and issues | No, pending review |
+| Jcode assistance in this submission-preparation session | Repository audit, issue drafting, requirement research, documentation/CI, native-test correction, dependency upgrades, frontend startup/alert/cache bug fixes, regression tests and browser acceptance assistance | Students must review and understand any adopted changes | PRs #18–#20, commit diffs and linked acceptance evidence | No, pending review |
 
 AI may support specific aspects but must not constitute the entirety of technical development. The rules require significant student contributions and technical understanding. If the real contribution history is uncertain, ask organizers rather than certify compliance. Attribute pretrained models, external code and assets separately; using them does not mean the team invented them.
 

@@ -41,7 +41,7 @@ The formal rule requires some degree of functionality. The checks below are our 
 - [ ] Check source/demo access logged out. Judges can request app/source access, and failure to honor a reasonable verification request can disqualify an entry. A public repository is a convenient access path, not a replacement for a working demo.
 - [ ] Keep a recording fallback. Explicitly identify simulations and unsupported features. No detections does not mean a safe path.
 
-Frontend partner owns `frontend/`. Agent's first patch is limited to docs, CI and native test/provenance corrections. Native physical acceptance is unverified and the full frontend suite is failing; see the readiness report.
+The October 26 submission sprint repairs frontend blockers while preserving the partner's visual design and integrates the preparation/security patches in PR #20. Automated regression and real Chrome virtual-camera acceptance pass; physical-phone acceptance, final deployment and student submission gates remain unverified. See the readiness report.
 
 ## 4. Required demonstration video
 

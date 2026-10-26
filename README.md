@@ -4,7 +4,7 @@ A camera-based obstacle alert **prototype** being prepared for the 2026 Congress
 
 **[Judge quick start and demo guide](docs/JUDGES.md)** · [Native iPhone judge guide](samples/ios/JUDGES.md) · [CAC checklist](docs/demo.md) · [Submission readiness](docs/SUBMISSION_READINESS.md) · [Official 2026 rules](https://www.congressionalappchallenge.us/wp-content/uploads/2026/05/2026-CAC-Rules.pdf)
 
-> **October 24 release audit:** frontend regression tests currently fail. The canonical deployed release is not yet selected with the frontend partner. Existing demo links are previews, not verified final CAC releases. See [readiness](docs/SUBMISSION_READINESS.md) before recording.
+> **October 26 submission sprint:** the original 17 frontend failures are fixed in [PR #20](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/pull/20). Actual browser online/offline model startup and lifecycle checks passed using a virtual camera. Existing demo links are still previews, not this verified final release. See [readiness](docs/SUBMISSION_READINESS.md) before recording.
 
 ## Try the browser app
 
