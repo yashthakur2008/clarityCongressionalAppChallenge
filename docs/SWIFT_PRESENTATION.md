@@ -44,6 +44,19 @@ No phone is required to review navigation and layout:
 3. Choose **Product → Run**. This launches the actual SwiftUI app in Simulator.
 4. Review the scanner and Settings. Use Simulator's appearance and text-size controls to inspect dark/light and larger text.
 
+### Verified in Simulator
+
+Checked October 26, 2026 on an isolated iPhone 17 simulator (iOS 27.0), using the real app build:
+
+| Check | Result |
+| --- | --- |
+| Native suite | 101 passed, 0 failed, 1 skipped (skip requires a compiled bundle) |
+| Scanner and Settings, standard text | Settings opens and closes, primary action reachable, no clipping |
+| Largest accessibility text | Start scanning wraps in a rounded rectangle, alert labels stack above their switches |
+| Light and dark appearance | System surfaces adapt; the coral accent remains |
+
+Screenshots for review: `~/Desktop/clarity-app-preview`.
+
 Simulator does not establish physical camera detection quality, LiDAR measurements, haptics, or background-camera behavior. An unavailable camera is a real simulator limitation, not a reason to insert unlabelled fake detections. Screen captures from Simulator show the native interface, not a browser mockup.
 
 ### Unsigned Simulator build
