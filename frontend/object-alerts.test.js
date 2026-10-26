@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { notifyPhone } from './phone-notifications.js';
-import { createObjectAlerts, vibrationPattern } from './object-alerts.js';
+import { createObjectAlerts, mountObjectAlerts, vibrationPattern } from './object-alerts.js';
 
 function fixture(permission = 'granted') {
   const notices = [], vibrations = [];
@@ -97,4 +97,57 @@ test('zero strength disables vibration; repeated patterns maintain alternating p
   assert.deepEqual(pattern, [167, 98, 167, 200, 167, 98, 167]);
   assert.equal(pattern.length % 2, 1);
   assert.equal(vibrationPattern(100, 99).length, 19);
+});
+
+
+test('vibrating notifications use API-valid options rather than silently falling back', async () => {
+  const f = fixture();
+  f.registration.showNotification = async (title, options) => {
+    if (options.silent && 'vibrate' in options) throw new TypeError('silent notifications cannot vibrate');
+    f.notices.push({ title, options });
+  };
+  assert.equal((await f.alerts.send('Object ahead.')).notification, true);
+  assert.equal(f.notices[0].options.silent, false);
+  assert.deepEqual(f.vibrations, []);
+});
+
+test('failed notification fallback rechecks vibration preferences after lookup', async () => {
+  const f = fixture(); let resolve;
+  f.platform.navigator.serviceWorker.getRegistration = () => new Promise(yes => { resolve = yes; });
+  f.registration.showNotification = async () => { throw new Error('Unavailable'); };
+  const pending = f.alerts.send('Object ahead.');
+  f.prefs.vibration = false; resolve(f.registration);
+  assert.equal((await pending).vibration, false);
+  assert.deepEqual(f.vibrations, []);
+});
+
+test('mounted alert controls unlock sound and change presets without out-of-scope references', async () => {
+  const listeners = {}, elements = {};
+  for (const id of ['alert', 'alertSound', 'alertVolume', 'camera-alert-output-status']) {
+    elements[id] = { value: '', addEventListener(type, callback) { listeners[id + ':' + type] = callback; } };
+  }
+  elements.alert.value = 'sound'; elements.alertSound.value = 'ping'; elements.alertVolume.value = '70';
+  const doc = { getElementById: id => elements[id], addEventListener(type, callback) { listeners[type] = callback; } };
+  const oscillators = [];
+  let contexts = 0;
+  class AudioContext {
+    constructor() { contexts++; }
+    state = 'running'; currentTime = 0; destination = {};
+    createGain() { return { connect() {}, gain: { setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {} } }; }
+    createOscillator() {
+      const oscillator = { frequency: {}, connect() {}, start() { this.started = true; }, stop() { this.stopped = true; } };
+      oscillators.push(oscillator); return oscillator;
+    }
+  }
+  const platform = { AudioContext, addEventListener(type, callback) { listeners[type] = callback; } };
+  const alerts = mountObjectAlerts(doc, platform, { enableSpeech() {} });
+  listeners.pointerdown(); listeners.keydown();
+  assert.equal(contexts, 1);
+  listeners['alertSound:change']();
+  const delivery = await alerts.send('Object ahead.');
+  assert.equal(delivery.sound, true);
+  assert.equal(oscillators.length, 1);
+  assert.equal(oscillators[0].started, true);
+  alerts.cancel();
+  assert.equal(oscillators[0].stopped, true);
 });
