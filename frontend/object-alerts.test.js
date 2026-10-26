@@ -151,3 +151,61 @@ test('mounted alert controls unlock sound and change presets without out-of-scop
   alerts.cancel();
   assert.equal(oscillators[0].stopped, true);
 });
+
+// Control only external audio/storage boundaries. The alert lifecycle is the
+// real module, and deferred decodes make cancellation/replacement deterministic.
+function customSoundFixture() {
+  const deliveries = [], played = [], decodes = [], waiters = [];
+  let storedLabel = 'A';
+  class AudioContext {
+    state = 'running'; currentTime = 0; destination = {};
+    decodeAudioData(bytes) {
+      let resolve, reject;
+      const result = new Promise((yes, no) => { resolve = yes; reject = no; });
+      const decode = { label: new TextDecoder().decode(bytes), resolve, reject };
+      if (waiters.length) waiters.shift()(decode); else decodes.push(decode);
+      return result;
+    }
+    createGain() { return { gain: {}, connect() {} }; }
+    createBufferSource() {
+      return { buffer: null, connect() {}, start() { played.push(this.buffer.label); }, stop() {} };
+    }
+  }
+  const platform = { AudioContext, indexedDB: { open() {
+    const request = {};
+    queueMicrotask(() => {
+      request.result = { objectStoreNames: { contains: () => true }, close() {}, transaction() {
+        return { objectStore: () => ({ get() {
+          const read = {};
+          queueMicrotask(() => {
+            const label = storedLabel;
+            read.result = { arrayBuffer: async () => new TextEncoder().encode(label).buffer };
+            read.onsuccess();
+          });
+          return read;
+        } }) };
+      } };
+      request.onsuccess();
+    });
+    return request;
+  } } };
+  const prefs = { notifications: false, vibration: false, sound: true, soundPreset: 'custom', volume: 70, repeatCount: 1 };
+  const alerts = createObjectAlerts({ platform, readPreferences: () => prefs, onDelivery: value => deliveries.push(value) });
+  return { alerts, prefs, deliveries, played, setStored: label => { storedLabel = label; },
+    nextDecode: () => decodes.length ? Promise.resolve(decodes.shift()) : new Promise(resolve => waiters.push(resolve)) };
+}
+
+test('cancel during custom audio decode prevents late delivery callbacks and allows a fresh send', async () => {
+  const f = customSoundFixture();
+  const pending = f.alerts.send('Old alert');
+  const decode = await f.nextDecode();
+  f.alerts.cancel();
+  decode.resolve({ label: decode.label, duration: .1 });
+  const cancelled = await pending;
+  assert.deepEqual(f.played, []);
+  assert.deepEqual(f.deliveries, [], 'cancelled work must not overwrite the output status');
+  assert.deepEqual(cancelled, { notification: false, vibration: false });
+  assert.equal((await f.alerts.send('Fresh alert')).sound, true);
+  assert.deepEqual(f.played, ['A']);
+  assert.equal(f.deliveries.length, 1);
+});

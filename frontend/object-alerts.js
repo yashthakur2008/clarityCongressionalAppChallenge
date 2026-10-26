@@ -132,6 +132,7 @@ export function createObjectAlerts({ platform = globalThis, readPreferences = ()
       try { vibration = platform.navigator?.vibrate?.(vibrationValue) === true; } catch { /* Visible and spoken alerts remain. */ }
     }
     const sound = await soundTask;
+    if (signal.aborted) return { notification: false, vibration: false };
     // Preserve the notification/vibration API for callers without sound preferences.
     const delivery = { notification, vibration, ...(prefs.sound !== undefined ? { sound } : {}) };
     onDelivery(delivery);
