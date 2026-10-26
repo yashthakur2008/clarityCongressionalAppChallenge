@@ -126,3 +126,12 @@ test('current animated header logo is available offline with its production quer
   assert.ok(response, 'versioned header logo has an offline response');
   assert.equal(await response.text(), 'precache:/icons/eye_logo_smooth.gif');
 });
+
+test('offline shell prefers the freshest exact query-versioned response before its precache fallback', async () => {
+  const w = worker();
+  await w.dispatch('install');
+  const request = w.request('/icons/eye_logo_smooth.gif?v=smooth-6');
+  assert.equal(await (await w.dispatch('fetch', { request })).text(), 'fresh network');
+  w.setOffline(true);
+  assert.equal(await (await w.dispatch('fetch', { request })).text(), 'fresh network');
+});

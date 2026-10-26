@@ -54,7 +54,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(fetch(event.request).then((response) => {
     if (response.ok) { const copy = response.clone(); event.waitUntil(caches.open(CACHE).then((cache) => cache.put(event.request, copy))); }
     return response;
-  }).catch(async () => (await caches.open(CACHE).then(cache => cache.match(url.pathname))) || Response.error()));
+  }).catch(async () => (await caches.open(CACHE).then(async cache => (await cache.match(event.request)) || (await cache.match(url.pathname)))) || Response.error()));
 });
 
 self.addEventListener('notificationclick', (event) => {
