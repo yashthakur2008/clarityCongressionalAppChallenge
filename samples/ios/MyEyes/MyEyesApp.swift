@@ -23,7 +23,6 @@ struct MyEyesApp: App {
     var body: some Scene {
         WindowGroup {
             ScannerView(model: model)
-                .preferredColorScheme(.dark)
                 .tint(.senseTeal)
                 .onChange(of: scenePhase) { phase in
                     PiPDiagnostics.log("scene.phase", "value=\(phase)")
@@ -38,11 +37,11 @@ struct MyEyesApp: App {
 }
 
 extension Color {
-    // Web identity tokens. Keep the shared proximity band colors independent.
-    static let senseBackground = Color(red: 16 / 255, green: 24 / 255, blue: 32 / 255)
+    // Semantic native surfaces with the coral brand accent. Proximity colors stay independent.
+    static let senseBackground = Color(uiColor: .systemGroupedBackground)
     static let senseTeal = Color(red: 243 / 255, green: 139 / 255, blue: 104 / 255)
-    static let senseSurface = Color(red: 28 / 255, green: 42 / 255, blue: 53 / 255)
-    static let senseSurfaceBottom = Color(red: 22 / 255, green: 34 / 255, blue: 44 / 255)
-    static let senseMuted = Color(red: 169 / 255, green: 181 / 255, blue: 191 / 255)
-    static let senseNavigation = Color(red: 18 / 255, green: 29 / 255, blue: 39 / 255)
+    static let senseSurface = Color(uiColor: .secondarySystemGroupedBackground)
+    static let senseSurfaceBottom = Color(uiColor: .tertiarySystemGroupedBackground)
+    static let senseMuted = Color(uiColor: .secondaryLabel)
+    static let senseNavigation = Color(uiColor: .systemBackground)
 }
