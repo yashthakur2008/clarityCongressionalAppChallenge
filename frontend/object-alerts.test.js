@@ -155,7 +155,7 @@ test('mounted alert controls unlock sound and change presets without out-of-scop
 // Control only external audio/storage boundaries. The alert lifecycle is the
 // real module, and deferred decodes make cancellation/replacement deterministic.
 function customSoundFixture() {
-  const deliveries = [], played = [], decodes = [], waiters = [];
+  const deliveries = [], played = [], stopped = [], decodeLabels = [], decodes = [], waiters = [];
   let storedLabel = 'A';
   class AudioContext {
     state = 'running'; currentTime = 0; destination = {};
@@ -163,12 +163,13 @@ function customSoundFixture() {
       let resolve, reject;
       const result = new Promise((yes, no) => { resolve = yes; reject = no; });
       const decode = { label: new TextDecoder().decode(bytes), resolve, reject };
+      decodeLabels.push(decode.label);
       if (waiters.length) waiters.shift()(decode); else decodes.push(decode);
       return result;
     }
     createGain() { return { gain: {}, connect() {} }; }
     createBufferSource() {
-      return { buffer: null, connect() {}, start() { played.push(this.buffer.label); }, stop() {} };
+      return { buffer: null, connect() {}, start() { played.push(this.buffer.label); }, stop() { stopped.push(this.buffer.label); } };
     }
   }
   const platform = { AudioContext, indexedDB: { open() {
@@ -191,7 +192,7 @@ function customSoundFixture() {
   } } };
   const prefs = { notifications: false, vibration: false, sound: true, soundPreset: 'custom', volume: 70, repeatCount: 1 };
   const alerts = createObjectAlerts({ platform, readPreferences: () => prefs, onDelivery: value => deliveries.push(value) });
-  return { alerts, prefs, deliveries, played, setStored: label => { storedLabel = label; },
+  return { alerts, platform, prefs, deliveries, played, stopped, decodeLabels, setStored: label => { storedLabel = label; },
     nextDecode: () => decodes.length ? Promise.resolve(decodes.shift()) : new Promise(resolve => waiters.push(resolve)) };
 }
 
@@ -208,4 +209,85 @@ test('cancel during custom audio decode prevents late delivery callbacks and all
   assert.equal((await f.alerts.send('Fresh alert')).sound, true);
   assert.deepEqual(f.played, ['A']);
   assert.equal(f.deliveries.length, 1);
+});
+
+for (const finishOld of ['success', 'failure']) {
+  test(`reset ignores stale decode ${finishOld} without replacing the new pending cache`, async () => {
+    const f = customSoundFixture();
+    const old = f.alerts.send('Old');
+    const decodeA = await f.nextDecode();
+    f.alerts.resetCustomSound(); f.setStored('B');
+    const fresh = f.alerts.send('Fresh');
+    const decodeB = await f.nextDecode();
+    if (finishOld === 'success') decodeA.resolve({ label: 'A', duration: .1 });
+    else decodeA.reject(new Error('Old decode failed'));
+    await old;
+    assert.deepEqual(f.played, [], 'reset must suppress old playback');
+    const shared = f.alerts.send('Share new pending decode');
+    await new Promise(resolve => setImmediate(resolve));
+    assert.deepEqual(f.decodeLabels, ['A', 'B'], 'stale failure must not clear the new promise');
+    decodeB.resolve({ label: 'B', duration: .1 });
+    await Promise.all([fresh, shared]);
+    await f.alerts.send('Cached');
+    assert.deepEqual(f.played, ['B', 'B', 'B']);
+  });
+}
+
+test('old success after new decode cannot contaminate the replacement buffer', async () => {
+  const f = customSoundFixture();
+  const old = f.alerts.send('Old'); const a = await f.nextDecode();
+  f.alerts.resetCustomSound(); f.setStored('B');
+  const fresh = f.alerts.send('Fresh'); const b = await f.nextDecode();
+  b.resolve({ label: 'B', duration: .1 }); await fresh;
+  a.resolve({ label: 'A', duration: .1 }); await old;
+  await f.alerts.send('Cached');
+  assert.deepEqual(f.played, ['B', 'B']);
+});
+
+test('reset stops active custom repeats and a fresh decode can play', async () => {
+  const f = customSoundFixture(); f.prefs.repeatCount = 2;
+  const first = f.alerts.send('First'); const a = await f.nextDecode();
+  a.resolve({ label: 'A', duration: .1 }); await first;
+  f.alerts.resetCustomSound();
+  assert.deepEqual(f.stopped, ['A', 'A']);
+  f.setStored('B'); const fresh = f.alerts.send('Fresh'); const b = await f.nextDecode();
+  b.resolve({ label: 'B', duration: .1 }); await fresh;
+  assert.deepEqual(f.played, ['A', 'A', 'B', 'B']);
+});
+
+test('mounted alerts invalidate custom sound after successful upload storage event', async () => {
+  const f = customSoundFixture(), events = {};
+  f.platform.addEventListener = (type, callback) => { events[type] = callback; };
+  const elements = Object.fromEntries(Object.entries({ alert: 'sound', alertSound: 'custom', alertVolume: '70' })
+    .map(([id, value]) => [id, { value, addEventListener() {} }]));
+  const alerts = mountObjectAlerts({ getElementById: id => elements[id], addEventListener() {} }, f.platform, {});
+  const first = alerts.send('First'); const a = await f.nextDecode();
+  a.resolve({ label: 'A', duration: .1 }); await first;
+  f.setStored('B');
+  assert.equal(typeof events['custom-sound:saved'], 'function');
+  events['custom-sound:saved']();
+  const fresh = alerts.send('Fresh'); const b = await f.nextDecode();
+  b.resolve({ label: 'B', duration: .1 }); await fresh;
+  assert.deepEqual(f.played, ['A', 'B']);
+});
+
+test('current decode failure remains retryable after stale failures are guarded', async () => {
+  const f = customSoundFixture();
+  const first = f.alerts.send('Unreadable'); const a = await f.nextDecode();
+  a.reject(new Error('Decode failed')); await first;
+  const retry = f.alerts.send('Retry'); const b = await f.nextDecode();
+  b.resolve({ label: 'A', duration: .1 });
+  assert.equal((await retry).sound, true);
+  assert.deepEqual(f.decodeLabels, ['A', 'A']);
+  assert.deepEqual(f.played, ['A']);
+});
+
+test('custom reset does not cancel pending notification or vibration delivery', async () => {
+  const f = fixture(); let resolve;
+  f.platform.navigator.serviceWorker.getRegistration = () => new Promise(yes => { resolve = yes; });
+  const pending = f.alerts.send('Object ahead');
+  f.alerts.resetCustomSound(); resolve(f.registration);
+  assert.deepEqual(await pending, { notification: true, vibration: true });
+  assert.equal(f.notices.length, 1);
+  assert.deepEqual(f.vibrations, []);
 });

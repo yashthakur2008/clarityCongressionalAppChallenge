@@ -1126,6 +1126,7 @@
 
         try {
           await saveCustomSound(file);
+          window.dispatchEvent(new Event("custom-sound:saved"));
           showToast("Custom sound saved on this device");
         } catch (error) {
           showToast("Custom sound ready for this session");

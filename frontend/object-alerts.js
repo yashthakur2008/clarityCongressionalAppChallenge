@@ -15,6 +15,8 @@ export function createObjectAlerts({ platform = globalThis, readPreferences = ()
   let audioContext = null;
   let customSoundPromise = null;
   let customSoundBuffer = null;
+  let customSoundGeneration = 0;
+  const activeCustomAudio = new Set();
   const activeAudio = new Set();
   const tones = {
     ping: [{ frequency: 880, start: 0, duration: .18, type: 'sine' }],
@@ -32,6 +34,7 @@ export function createObjectAlerts({ platform = globalThis, readPreferences = ()
     } catch { /* Sound can be unavailable while vibration and visible alerts continue. */ }
   }
   async function loadCustomSound() {
+    const generation = customSoundGeneration;
     if (customSoundBuffer) return customSoundBuffer;
     if (!customSoundPromise) customSoundPromise = (async () => {
       if (!platform.indexedDB || !audioContext) return null;
@@ -48,9 +51,14 @@ export function createObjectAlerts({ platform = globalThis, readPreferences = ()
         };
       });
       if (!file) return null;
-      customSoundBuffer = await audioContext.decodeAudioData(await file.arrayBuffer());
-      return customSoundBuffer;
-    })().catch(() => { customSoundPromise = null; return null; });
+      const buffer = await audioContext.decodeAudioData(await file.arrayBuffer());
+      if (generation !== customSoundGeneration) return null;
+      customSoundBuffer = buffer;
+      return buffer;
+    })().catch(() => {
+      if (generation === customSoundGeneration) customSoundPromise = null;
+      return null;
+    });
     return customSoundPromise;
   }
   async function playSound(prefs, signal) {
@@ -63,8 +71,9 @@ export function createObjectAlerts({ platform = globalThis, readPreferences = ()
     const sources = [];
     try {
       if (prefs.soundPreset === 'custom') {
+        const generation = customSoundGeneration;
         const buffer = await loadCustomSound();
-        if (signal.aborted || audioContext.state !== 'running') return false;
+        if (signal.aborted || generation !== customSoundGeneration || audioContext.state !== 'running') return false;
         if (buffer) {
           for (let i = 0; i < repeats; i++) {
             const source = audioContext.createBufferSource();
@@ -72,8 +81,8 @@ export function createObjectAlerts({ platform = globalThis, readPreferences = ()
             source.buffer = buffer;
             gain.gain.value = volume;
             source.connect(gain); gain.connect(audioContext.destination);
-            sources.push(source); activeAudio.add(source);
-            source.onended = () => activeAudio.delete(source);
+            sources.push(source); activeAudio.add(source); activeCustomAudio.add(source);
+            source.onended = () => { activeAudio.delete(source); activeCustomAudio.delete(source); };
             source.start(audioContext.currentTime + i * (buffer.duration + .12));
           }
           return true;
@@ -110,6 +119,7 @@ export function createObjectAlerts({ platform = globalThis, readPreferences = ()
     for (const source of activeAudio) {
       try { source.stop(); } catch { /* The source may already have finished. */ }
       activeAudio.delete(source);
+      activeCustomAudio.delete(source);
     }
     try { platform.navigator?.vibrate?.(0); } catch { /* Unsupported or interrupted device. */ }
   }
@@ -139,6 +149,13 @@ export function createObjectAlerts({ platform = globalThis, readPreferences = ()
     return delivery;
   }
   function resetCustomSound() {
+    // Pending decodes belong to the old file, even if they settle after replacement.
+    customSoundGeneration++;
+    for (const source of activeCustomAudio) {
+      try { source.stop(); } catch { /* The source may already have finished. */ }
+      activeAudio.delete(source);
+    }
+    activeCustomAudio.clear();
     customSoundPromise = null;
     customSoundBuffer = null;
   }
@@ -196,6 +213,7 @@ export function mountObjectAlerts(doc, platform, feature) {
   }
   get('alert')?.addEventListener('change', () => { alerts.cancel(); refresh(); });
   get('alertSound')?.addEventListener('change', alerts.resetCustomSound);
+  platform.addEventListener('custom-sound:saved', alerts.resetCustomSound);
   get('vibrationStrength')?.addEventListener('input', () => alerts.cancel());
   get('alertRepeatCount')?.addEventListener('change', () => alerts.cancel());
   platform.addEventListener('camera:obstacle', event => {
