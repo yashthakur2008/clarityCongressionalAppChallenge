@@ -42,7 +42,7 @@ The formal rule requires some degree of functionality. The checks below are our 
 - [ ] Check source/demo access logged out. Judges can request app/source access, and failure to honor a reasonable verification request can disqualify an entry. A public repository is a convenient access path, not a replacement for a working demo.
 - [ ] Keep a recording fallback. Explicitly identify simulations and unsupported features. No detections does not mean a safe path.
 
-The October 26 submission sprint repairs frontend blockers while preserving the partner's visual design and integrates the preparation/security patches in PR #20. Automated regression and real Chrome virtual-camera acceptance pass; physical-phone acceptance, final deployment and student submission gates remain unverified. See the readiness report.
+The October 26 submission sprint repairs frontend blockers while preserving the partner's visual design and integrates the preparation/security patches in PR #20. Automated regression and real Chrome virtual-camera acceptance pass; the approved Cloudflare deployment is now verified against all 66 source assets. Physical-phone acceptance and personal submission gates remain unverified. See the readiness report.
 
 ## 4. Required demonstration video
 

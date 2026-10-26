@@ -1,16 +1,16 @@
 # Clarity Congressional submission readiness
 
-**Updated:** October 26, 2026, 05:42 UTC (Sunday October 25, 10:42 PM PDT).
-**Submission candidate:** [PR #20](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/pull/20), branch `fix/submission-sprint`. Incorporates PRs #18 and #19. Not yet merged or deployed.
+**Updated:** October 26, 2026, 07:05 UTC (Monday October 26, 12:05 AM PDT).
+**Submission candidate:** [PR #20](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/pull/20), branch `fix/submission-sprint`. Incorporates PRs #18 and #19. Source `df0ebaa` is deployed on the approved Cloudflare judges URL; PR remains open. See [release identity and verification](CAC_RELEASE_2026-10-26.md).
 **Official deadline:** Monday October 26, **9:00 AM PDT / 12:00 PM EDT / 16:00 UTC**.
 **Entry:** Yash is the sole entrant (user-confirmed October 26); Cloudflare is the approved hosting target. Prior contributors remain credited, not listed as entrants.
 **Requested three-hour target:** approximately **1:34 AM PDT Monday**. Do not wait until the official deadline.
 
 ## Progress
 
-`████░░░░░░░░` **4 / 12 evidence gates = 33% verified or prepared. Engineering candidate improved; submission is NOT yet complete.**
+`█████░░░░░░░` **5 / 12 evidence gates = 42% verified or prepared. Tested browser release is LIVE; submission is NOT yet complete.**
 
-This measures submission evidence, not coding completion or likelihood of winning. Gate 5 is prepared for student review. Gate 7 has actual CI evidence at `c9fc0ad`; subsequent candidate revisions must retain green checks. Missing eligibility, video and receipt cannot be replaced by more code tests.
+This measures submission evidence, not coding completion or likelihood of winning. Gate 5 is prepared for student review. Gates 6 and 7 have deployed-source parity and actual green CI evidence at `df0ebaa`; subsequent runtime revisions require fresh verification. Missing eligibility, video and receipt cannot be replaced by more code tests.
 
 | Gate | Status | Evidence or next action | Owner |
 | --- | --- | --- | --- |
@@ -19,10 +19,10 @@ This measures submission evidence, not coding completion or likelihood of winnin
 | 3. Eligibility, registration, entrant roster and inherited-work rights | UNKNOWN | #2: solo roster confirmed; verify participating district, your school/residence eligibility, one app/district, creation date, your contributions and inherited-work rights privately | Yash |
 | 4. Full AI disclosure and significant student contributions | UNKNOWN | #3: complete the [disclosure worksheet](SUBMISSION_DRAFT.md); include this sprint's code/test assistance | Yash |
 | 5. CAC-facing documentation and application checklist | PREPARED IN PATCH | [Checklist](demo.md), drafting prompts, judge guide and this handoff prepared; student approval still required | Agent + Yash |
-| 6. Final release identity and matching deployment | INCOMPLETE | #6: PR #20 contains candidate source; existing hosted preview is a different release. Select/deploy the tested revision before recording | Release owner |
-| 7. Regression checks and automated CI | VERIFIED FOR CANDIDATE | Backend 28, frontend 254, Worker 39 passed at `c9fc0ad`; native 95 passed/1 skipped. All three actual Actions jobs green. Additional cache regression fixed afterward; final-head CI required | Agent |
+| 6. Final release identity and matching deployment | VERIFIED | Cloudflare version `97cde6a2-3249-40b2-bfff-19ee700a9ce3`, source `df0ebaa`; all 66 public assets match; [release record](CAC_RELEASE_2026-10-26.md) | Agent |
+| 7. Regression checks and automated CI | VERIFIED FOR DEPLOYED SOURCE | Backend 28, frontend 255 and Worker 39 pass in actual Node24 Actions at `df0ebaa`; native build green. Local full native run with actual built artifact: 96/96, zero skips | Agent |
 | 8. Licenses, provenance, privacy and claim boundaries | INCOMPLETE | Native attribution corrected, backend audit zero. Inherited-code/assets rights and actual student disclosures still unverified | Agent + Yash |
-| 9. Actual demo-device functionality and accessibility | PARTIAL | Real Chrome online/offline inference and lifecycle checks passed using virtual camera at 390px. Physical phone, mobile Safari, actual scenes and assistive-technology acceptance not performed | Yash |
+| 9. Actual demo-device functionality and accessibility | PARTIAL | Public Cloudflare HTTPS site: real Chrome online/offline inference and lifecycle checks passed using virtual camera at 390px. Physical phone, mobile Safari, actual scenes and assistive-technology acceptance not performed | Yash |
 | 10. Public 1–3-minute video | UNKNOWN | #4: public YouTube/Vimeo, all required content, <=180 seconds, logged-out playback | Yash |
 | 11. Complete student-reviewed application | UNKNOWN | #5: actual form fields, district instructions, truthful answers and disclosures | Yash |
 | 12. Submitted application and receipt | UNKNOWN | #5: human owner submits and saves confirmation privately | Yash |
@@ -41,6 +41,8 @@ The reproduced baseline had **229 frontend passes / 17 failures**. The integrate
 - Integrated the already reviewed native provenance/default assertion, CI, documentation and dependency patches. Production audit reports zero known advisories, not proof of universal security.
 
 ## Actual acceptance evidence
+
+**Latest public release:** all 66 assets matched, and the online/offline/cancel/retry/navigation browser checks below were repeated against the deployed HTTPS site. [Exact source, Cloudflare version, final CI and per-check results](CAC_RELEASE_2026-10-26.md). The older local/CI rows below retain their original revision scope; the latest native artifact-backed run passes 96/96 with no skips.
 
 | Check | Observed result | Boundary / limitation |
 | --- | --- | --- |
@@ -68,7 +70,7 @@ These links establish that revision only. Check PR #20 for final-head status. No
 
 ## Remaining three-hour work order
 
-1. **Release:** review/merge the green candidate, deploy it through the approved Cloudflare hosting account, and verify served files match the chosen commit. Do not record an older preview while claiming the fixes above.
+1. **Release delivered:** use the [verified Cloudflare judges URL](https://stepsense-yolox-v2-preview.stepsense-dahacks.workers.dev/) at pinned source `df0ebaa`. PR #20 remains available for review/merge in the Congressional repository. Record this tested build, not another historical URL.
 2. **Phone rehearsal:** stationary and supervised, test cold Start, loading Cancel, Retry after a network failure, a supported visible object, Stop/navigation, and selected alerts. Record device/browser and honest misses. Do not test by walking into hazards.
 3. **Yash in parallel:** confirm eligibility/rights and complete truthful contribution/AI disclosures. Agents cannot attest to these personal facts.
 4. **Video:** use the [required-content recording checklist](demo.md), record the actual final build, upload publicly, and verify duration plus logged-out playback.

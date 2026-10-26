@@ -1,18 +1,18 @@
 # Judge guide: StepSense / Clarity
 
-**Current CAC release status, October 26:** [PR #20](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/pull/20) fixes the 17 frontend regressions found in the October 24 audit. Actual Chrome onboarding, bundled-model startup, cancellation/retry, Stop/navigation and offline restart passed with a virtual camera. See the [current evidence and remaining gates](SUBMISSION_READINESS.md). No final deployed revision or physical-device acceptance is yet certified. Historical counts below do not describe this sprint.
+**Current CAC release status, October 26:** [PR #20](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/pull/20) fixes the 17 frontend regressions found in the October 24 audit. Actual Chrome onboarding, bundled-model startup, cancellation/retry, Stop/navigation and offline restart passed with a virtual camera. See the [current evidence and remaining gates](SUBMISSION_READINESS.md). The Cloudflare judges URL is now deployed from `df0ebaa`; [all 66 assets and public browser behavior were verified](CAC_RELEASE_2026-10-26.md). Physical-device acceptance is still outstanding. Historical counts below do not describe this sprint.
 
 A camera-based object-alert prototype exploring how everyday phones can provide visual, spoken, sound, and supported haptic cues. This is **not a navigation aid certified for safety**. Demonstrate it stationary, not while walking into obstacles or traffic.
 
 ## Fastest way to inspect it
 
 1. Open the [browser preview](https://stepsense-yolox-v2-preview.stepsense-dahacks.workers.dev/).
-2. Select **Camera**, press **Start**, and allow camera permission. Wait for model loading before interpreting results.
+2. Complete first-run setup if shown, press **Start scanning**, wait for model loading, then allow camera permission. Wait for actual detection results before interpreting the scene.
 3. Show an ordinary supported object, such as a chair, bottle, or person, in good light. The model may miss it. Explain observed results rather than promising a detection.
 4. Inspect the overlay/status and try the available alert preferences. Move the object in and out of the displayed image zone. That zone is a screen-coordinate heuristic, not measured free space.
 5. Press **Stop** and confirm camera capture stops. If permission is denied, restore it through browser settings rather than repeatedly pressing Start.
 
-The existing isolated preview was updated on **October 17, 2026 at 08:52 UTC**, from tested source `3fb11da`, as version `7b46f74f-ca3c-4902-8ea6-b2279742d767`. Its historical `yolox-v2-preview` hostname does **not** identify the current model: this deployment uses **COCO-SSD**. Six application files and all ten measured runtime/model assets matched the tested source byte-for-byte. Actual Chrome 155 hosted checks passed real inference, camera restart, cache migration and fresh offline inference with synthetic media. This does not establish physical-phone accuracy or permissions. The preview has no remote inference API and rejects uploads, so do not select backend detector mode. The separate [production app/API origin](https://stepsense-detection.stepsense-dahacks.workers.dev/) was not redeployed by this work.
+The isolated preview was updated on **October 26, 2026 at approximately 07:01 UTC**, from tested Congressional source `df0ebaa`, as Cloudflare version `97cde6a2-3249-40b2-bfff-19ee700a9ce3`. All **66 public assets** match that source byte-for-byte. Actual hosted Chrome checks passed bundled-model inference, cancellation/retry, Start/Stop/navigation and fresh offline restart with virtual media. The historical hostname does **not** identify the model: the browser uses **COCO-SSD**. No remote inference API is enabled; uploads are rejected. The separate production app/API origin was not redeployed. See the [complete release record](CAC_RELEASE_2026-10-26.md).
 
 For the iPhone app already opened in Xcode, use the **[native judge guide](../samples/ios/JUDGES.md)**. It explains the actual build, bundled model, install requirements, and outstanding physical-device checks. Source access is not an App Store or TestFlight distribution guarantee.
 
