@@ -3,6 +3,7 @@
 **Updated:** October 26, 2026, 05:42 UTC (Sunday October 25, 10:42 PM PDT).
 **Submission candidate:** [PR #20](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/pull/20), branch `fix/submission-sprint`. Incorporates PRs #18 and #19. Not yet merged or deployed.
 **Official deadline:** Monday October 26, **9:00 AM PDT / 12:00 PM EDT / 16:00 UTC**.
+**Entry:** Yash is the sole entrant (user-confirmed October 26); Cloudflare is the approved hosting target. Prior contributors remain credited, not listed as entrants.
 **Requested three-hour target:** approximately **1:34 AM PDT Monday**. Do not wait until the official deadline.
 
 ## Progress
@@ -15,18 +16,18 @@ This measures submission evidence, not coding completion or likelihood of winnin
 | --- | --- | --- | --- |
 | 1. Official rules and exact deadline | VERIFIED | [2026 rulebook](https://www.congressionalappchallenge.us/wp-content/uploads/2026/05/2026-CAC-Rules.pdf), reviewed October 24 | Agent |
 | 2. Public source available | VERIFIED | Public repository and PR #20 accessible; source commits published | Agent |
-| 3. Eligibility, registration, entrant roster and inherited-work rights | UNKNOWN | #2: confirm participating district, school/residence, <=4 students, half district-eligible, one app/district, creation date and actual authors privately | Students |
-| 4. Full AI disclosure and significant student contributions | UNKNOWN | #3: complete the [disclosure worksheet](SUBMISSION_DRAFT.md); include this sprint's code/test assistance | Students |
-| 5. CAC-facing documentation and application checklist | PREPARED IN PATCH | [Checklist](demo.md), drafting prompts, judge guide and this handoff prepared; student approval still required | Agent + students |
+| 3. Eligibility, registration, entrant roster and inherited-work rights | UNKNOWN | #2: solo roster confirmed; verify participating district, your school/residence eligibility, one app/district, creation date, your contributions and inherited-work rights privately | Yash |
+| 4. Full AI disclosure and significant student contributions | UNKNOWN | #3: complete the [disclosure worksheet](SUBMISSION_DRAFT.md); include this sprint's code/test assistance | Yash |
+| 5. CAC-facing documentation and application checklist | PREPARED IN PATCH | [Checklist](demo.md), drafting prompts, judge guide and this handoff prepared; student approval still required | Agent + Yash |
 | 6. Final release identity and matching deployment | INCOMPLETE | #6: PR #20 contains candidate source; existing hosted preview is a different release. Select/deploy the tested revision before recording | Release owner |
 | 7. Regression checks and automated CI | VERIFIED FOR CANDIDATE | Backend 28, frontend 254, Worker 39 passed at `c9fc0ad`; native 95 passed/1 skipped. All three actual Actions jobs green. Additional cache regression fixed afterward; final-head CI required | Agent |
-| 8. Licenses, provenance, privacy and claim boundaries | INCOMPLETE | Native attribution corrected, backend audit zero. Inherited-code/assets rights and actual student disclosures still unverified | Agent + students |
-| 9. Actual demo-device functionality and accessibility | PARTIAL | Real Chrome online/offline inference and lifecycle checks passed using virtual camera at 390px. Physical phone, mobile Safari, actual scenes and assistive-technology acceptance not performed | Students |
-| 10. Public 1–3-minute video | UNKNOWN | #4: public YouTube/Vimeo, all required content, <=180 seconds, logged-out playback | Students |
-| 11. Complete student-reviewed application | UNKNOWN | #5: actual form fields, district instructions, truthful answers and disclosures | Students |
+| 8. Licenses, provenance, privacy and claim boundaries | INCOMPLETE | Native attribution corrected, backend audit zero. Inherited-code/assets rights and actual student disclosures still unverified | Agent + Yash |
+| 9. Actual demo-device functionality and accessibility | PARTIAL | Real Chrome online/offline inference and lifecycle checks passed using virtual camera at 390px. Physical phone, mobile Safari, actual scenes and assistive-technology acceptance not performed | Yash |
+| 10. Public 1–3-minute video | UNKNOWN | #4: public YouTube/Vimeo, all required content, <=180 seconds, logged-out playback | Yash |
+| 11. Complete student-reviewed application | UNKNOWN | #5: actual form fields, district instructions, truthful answers and disclosures | Yash |
 | 12. Submitted application and receipt | UNKNOWN | #5: human owner submits and saves confirmation privately | Yash |
 
-Each teammate must also complete the post-deadline exit questionnaire when received.
+Yash, as the sole entrant, must also complete the post-deadline exit questionnaire when received.
 
 ## What was fixed in this sprint
 
@@ -67,10 +68,10 @@ These links establish that revision only. Check PR #20 for final-head status. No
 
 ## Remaining three-hour work order
 
-1. **Release:** review/merge the green candidate, deploy it through the team's existing hosting account, and verify served files match the chosen commit. Do not record an older preview while claiming the fixes above.
+1. **Release:** review/merge the green candidate, deploy it through the approved Cloudflare hosting account, and verify served files match the chosen commit. Do not record an older preview while claiming the fixes above.
 2. **Phone rehearsal:** stationary and supervised, test cold Start, loading Cancel, Retry after a network failure, a supported visible object, Stop/navigation, and selected alerts. Record device/browser and honest misses. Do not test by walking into hazards.
-3. **Students in parallel:** confirm eligibility/rights and complete truthful contribution/AI disclosures. Agents cannot attest to these personal facts.
+3. **Yash in parallel:** confirm eligibility/rights and complete truthful contribution/AI disclosures. Agents cannot attest to these personal facts.
 4. **Video:** use the [required-content recording checklist](demo.md), record the actual final build, upload publicly, and verify duration plus logged-out playback.
-5. **Application:** students review all actual fields and district instructions, submit, and retain receipt. Do not mark ready/submitted before that evidence exists.
+5. **Application:** you review all actual fields and district instructions, submit, and retain receipt. Do not mark ready/submitted before that evidence exists.
 
 Keep optional Worker API, experimental depth and native features out of the primary demonstration unless independently verified. No new model training or visual redesign is needed for this deadline.

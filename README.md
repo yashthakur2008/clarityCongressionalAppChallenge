@@ -1,6 +1,6 @@
 # Clarity · Congressional App Challenge 2026
 
-A camera-based obstacle alert **prototype** being prepared for the 2026 Congressional App Challenge, based on the earlier DAHacks project. Eligibility, inherited-work rights and student contributions require team confirmation. StepSense and Clarity names remain in historical materials.
+A camera-based obstacle alert **prototype** being prepared for the 2026 Congressional App Challenge, based on the earlier DAHacks project. Yash is the sole CAC entrant (confirmed October 26). Eligibility, inherited-work rights and individual contributions still require his confirmation; sole entrant does not imply sole authorship of inherited work. StepSense and Clarity names remain in historical materials.
 
 **[Judge quick start and demo guide](docs/JUDGES.md)** · [Native iPhone judge guide](samples/ios/JUDGES.md) · [CAC checklist](docs/demo.md) · [Submission readiness](docs/SUBMISSION_READINESS.md) · [Official 2026 rules](https://www.congressionalappchallenge.us/wp-content/uploads/2026/05/2026-CAC-Rules.pdf)
 
