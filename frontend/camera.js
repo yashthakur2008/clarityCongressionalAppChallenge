@@ -49,14 +49,24 @@ export class CameraFeature {
       return;
     }
     const run = ++this.generation;
-    // Keep this lock until the browser settles permission, even after Cancel.
-    const request = { kind: 'permission' };
+    // Preparation can be cancelled immediately. Permission keeps its lock until
+    // the browser settles, so Cancel cannot open overlapping permission prompts.
+    const request = { kind: 'preparation' };
     const controller = new AbortController();
     this.startupController = controller;
     this.state.startupError = false;
     this.pending = request;
     let stream;
     try {
+      if (this.detector?.prepare) {
+        this.state.phase = 'loading';
+        this.state.camera = 'Loading detection model. Camera stays off until the model is ready. Choose Cancel to stop.';
+        this.update(this.state.camera);
+        await this.prepareDetector(controller, run);
+      }
+      if (run !== this.generation || controller.signal.aborted) return;
+      if (!this.isVisible()) { this.stop('Camera off because this page was hidden. Tap Start when you return.'); return; }
+      request.kind = 'permission';
       this.state.phase = 'requesting';
       this.state.camera = 'Requesting camera permission. Choose Allow in the browser prompt, or Cancel camera request below.';
       this.update(this.state.camera);
@@ -64,11 +74,13 @@ export class CameraFeature {
         stream = await this.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' } } });
       } catch (error) {
         if (run !== this.generation) return;
+        if (!this.isVisible()) { this.stop('Camera off because this page was hidden. Tap Start when you return.'); return; }
         if (!['OverconstrainedError', 'NotFoundError'].includes(error.name)) throw error;
         stream = await this.mediaDevices.getUserMedia({ audio: false, video: true });
       }
       if (run !== this.generation) { stream.getTracks().forEach(track => track.stop()); return; }
       this.stream = stream;
+      if (!this.isVisible()) { this.stop('Camera off because this page was hidden. Tap Start when you return.'); return; }
       this.emit('myeyes:permissionchange', { kind: 'camera', state: 'granted' });
       for (const track of stream.getTracks()) {
         track.addEventListener('ended', () => {
@@ -80,6 +92,7 @@ export class CameraFeature {
       try { await this.video.play(); }
       catch { throw Object.assign(new Error(), { name: 'PlaybackError' }); }
       if (run !== this.generation) return;
+      if (!this.isVisible()) { this.stop('Camera off because this page was hidden. Tap Start when you return.'); return; }
       this.state.phase = 'active';
       this.state.camera = 'Camera active.';
       this.update('Camera active.');
@@ -90,6 +103,12 @@ export class CameraFeature {
     } catch (error) {
       if (run !== this.generation) return;
       if (this.pending === request) this.pending = null;
+      if (request.kind === 'preparation') {
+        this.stop('Detection model could not load. Check your connection, then choose Retry or Cancel.');
+        this.state.startupError = true;
+        this.update(this.state.camera);
+        return;
+      }
       const messages = {
         NotAllowedError: 'Camera permission denied. Allow camera access in this site’s browser permissions, then tap Start.',
         SecurityError: 'Camera access is blocked. Open this page directly over HTTPS and check browser camera permissions.',
@@ -106,11 +125,32 @@ export class CameraFeature {
     }
   }
 
+  async prepareDetector(controller, run) {
+    let timer;
+    let abort;
+    const interrupted = new Promise((resolve, reject) => {
+      abort = () => reject(Object.assign(new Error('Model preparation cancelled'), { name: 'AbortError' }));
+      controller.signal.addEventListener('abort', abort, { once: true });
+      timer = this.schedule(() => reject(new Error('Model preparation timed out')), 120000);
+    });
+    try {
+      await Promise.race([this.detector.prepare({ signal: controller.signal, onStatus: message => {
+        if (run !== this.generation || controller.signal.aborted || this.state.phase !== 'loading') return;
+        this.state.camera = message;
+        this.update(message);
+      } }), interrupted]);
+    } finally {
+      this.unschedule(timer);
+      controller.signal.removeEventListener('abort', abort);
+    }
+  }
+
   stop(message = 'Camera off. Tap Start to restart.') {
     const runId = this.generation;
     this.generation++;
     this.startupController?.abort();
     this.startupController = null;
+    if (this.pending?.kind === 'preparation') this.pending = null;
     this.state.startupError = false;
     this.state.previewOnly = false;
     this.unschedule(this.stallTimer);
@@ -203,7 +243,7 @@ export class CameraFeature {
     this.detectionController = controller;
     this.state.detection = 'Detection starting.';
     this.update();
-    this.detectionRunning = true;
+    this.detectionRunning = false;
     try {
       await this.detector.start({ video: this.video, signal: controller.signal,
         onObstacle: () => { if (run === this.generation && !controller.signal.aborted && this.isVisible()) this.obstacle(false); },
@@ -228,6 +268,7 @@ export class CameraFeature {
         },
       });
       if (run !== this.generation || controller.signal.aborted) return;
+      this.detectionRunning = true;
       if (!this.state.result) this.state.detection = 'Detection running.';
       this.update(this.state.detection);
     } catch (error) {
