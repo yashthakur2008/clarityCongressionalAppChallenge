@@ -1,4 +1,4 @@
-const CACHE = 'myeyes-pwa-v18-install-icons';
+const CACHE = 'myeyes-pwa-v19-submission-startup';
 const ASSETS = [
   '/',
   '/index.html',
@@ -54,7 +54,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(fetch(event.request).then((response) => {
     if (response.ok) { const copy = response.clone(); event.waitUntil(caches.open(CACHE).then((cache) => cache.put(event.request, copy))); }
     return response;
-  }).catch(async () => (await caches.open(CACHE).then(cache => cache.match(event.request))) || Response.error()));
+  }).catch(async () => (await caches.open(CACHE).then(cache => cache.match(url.pathname))) || Response.error()));
 });
 
 self.addEventListener('notificationclick', (event) => {
