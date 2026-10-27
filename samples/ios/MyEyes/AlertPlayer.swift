@@ -1,4 +1,5 @@
 import AVFoundation
+import CoreHaptics
 import UIKit
 
 /// Retain completed framework objects until their identity check reaches the main actor.
@@ -15,9 +16,20 @@ final class AlertPlayer: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDel
     private var activePlayer: ObjectIdentifier?
     private var activeUtterance: ObjectIdentifier?
     private let proximityHaptic = UIImpactFeedbackGenerator(style: .medium)
+    private let nearHaptic = UINotificationFeedbackGenerator()
     private let proximitySpeech = AVSpeechSynthesizer()
     private var proximityPlayer: AVAudioPlayer?
     private var proximityAudioConfigured = false
+    /// A rapid burst reads as more urgent than one tap without lasting longer than the cadence.
+    static let nearBurstPulses = 3
+    static let nearBurstSpacing: TimeInterval = 0.07
+    private let criticalAlerts = CriticalAlerts()
+    private var hapticEngine: CHHapticEngine?
+    private var isNearBand = false
+    private var nearLabel: String?
+
+    /// The attention level the system actually granted, for honest UI reporting.
+    var criticalAlertLevel: CriticalAlertLevel { criticalAlerts.achievedLevel }
     private lazy var proximity = ProximityFeedback(
         emit: { [weak self] event in self?.emitProximity(event) },
         stopOutputs: { [weak self] in self?.stopProximityOutputs() }
@@ -26,6 +38,7 @@ final class AlertPlayer: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDel
     override init() {
         super.init()
         speech.delegate = self
+        criticalAlerts.requestAuthorization()
     }
 
     /// Root supplies every fresh result. Invalid measured/visual evidence stops feedback.
@@ -35,11 +48,17 @@ final class AlertPlayer: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDel
             stopProximity()
             return
         }
+        isNearBand = target.freshProximityBand(at: now) == .near
+        nearLabel = target.label
         if !proximity.isRunning { stopGenericOutputs() }
         proximity.update(input)
     }
 
-    func stopProximity() { proximity.stop() }
+    func stopProximity() {
+        isNearBand = false
+        nearLabel = nil
+        proximity.stop()
+    }
 
     private func emitProximity(_ event: ProximityFeedbackEvent) {
         if (event.sound || event.message != nil) && !proximityAudioConfigured {
@@ -50,15 +69,26 @@ final class AlertPlayer: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDel
             } catch { PiPDiagnostics.error("audio.proximity.activate.failure", error) }
         }
         if event.haptic {
-            // One discrete impact per cadence tick, never the multi-pulse warning pattern.
-            proximityHaptic.prepare()
-            proximityHaptic.impactOccurred()
+            if isNearBand {
+                // Sharp warning pattern plus a short burst: shorter and more urgent than one tap.
+                nearHaptic.prepare()
+                nearHaptic.notificationOccurred(.warning)
+                playNearBurst()
+            } else {
+                // One discrete impact per cadence tick, never the multi-pulse warning pattern.
+                proximityHaptic.prepare()
+                proximityHaptic.impactOccurred()
+            }
         }
         if event.sound {
             proximityPlayer?.stop()
             proximityPlayer = try? AVAudioPlayer(data: Self.beep())
-            proximityPlayer?.volume = 0.65
+            // NEAR raises the floor to unity; the clamp keeps any future tuning in range.
+            proximityPlayer?.volume = CriticalAlerts.clampVolume(isNearBand ? 1.0 : 0.65)
             proximityPlayer?.play()
+        }
+        if isNearBand, let label = nearLabel, event.haptic || event.sound || event.message != nil {
+            criticalAlerts.postNearAlert(label: label)
         }
         if let message = event.message, event.replaceSpeech || !proximitySpeech.isSpeaking {
             // Replace rather than queue. Beeps never touch the independent speech channel.
@@ -67,6 +97,35 @@ final class AlertPlayer: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDel
             utterance.rate = AVSpeechUtteranceDefaultSpeechRate
             utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
             proximitySpeech.speak(utterance)
+        }
+    }
+
+    /// CoreHaptics is unavailable on several devices and in the simulator; skip it silently.
+    private func playNearBurst() {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+        do {
+            if hapticEngine == nil {
+                let engine = try CHHapticEngine()
+                engine.resetHandler = { [weak self] in
+                    Task { @MainActor [weak self] in self?.hapticEngine = nil }
+                }
+                engine.stoppedHandler = { _ in }
+                hapticEngine = engine
+            }
+            guard let hapticEngine else { return }
+            try hapticEngine.start()
+            let events = (0..<Self.nearBurstPulses).map { index in
+                CHHapticEvent(eventType: .hapticTransient, parameters: [
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 1),
+                    CHHapticEventParameter(parameterID: .hapticSharpness, value: 1)
+                ], relativeTime: Double(index) * Self.nearBurstSpacing)
+            }
+            let player = try hapticEngine.makePlayer(with: try CHHapticPattern(events: events, parameters: []))
+            try player.start(atTime: CHHapticTimeImmediate)
+        } catch {
+            // The UINotificationFeedbackGenerator warning above already fired.
+            PiPDiagnostics.error("haptic.near.burst.failure", error)
+            hapticEngine = nil
         }
     }
 
@@ -97,7 +156,7 @@ final class AlertPlayer: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDel
         }
         if modes.contains(.sound) {
             player = try? AVAudioPlayer(data: Self.beep())
-            player?.volume = 0.65
+            player?.volume = CriticalAlerts.clampVolume(0.65)
             player?.delegate = self
             if let player, player.play() { activePlayer = ObjectIdentifier(player) }
         }

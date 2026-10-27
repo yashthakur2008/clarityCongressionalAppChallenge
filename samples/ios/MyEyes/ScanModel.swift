@@ -30,6 +30,9 @@ final class ScanModel: ObservableObject {
     @Published private(set) var roundTripMs: Int?
     @Published private(set) var alertReason = "idle"
     @Published private(set) var alertCount = 0
+    /// The urgent-notification level the system actually granted, not the one requested.
+    /// Reads `.timeSensitive` unless Apple has granted the critical-alerts entitlement.
+    var criticalAlertLevel: CriticalAlertLevel { alerts.criticalAlertLevel }
     @Published private(set) var checkedFrames = 0
     @Published private(set) var depthStatus = "Not started"
     @Published private(set) var centerSurfaceMeasurement: (meters: Double, capturedAt: TimeInterval)?

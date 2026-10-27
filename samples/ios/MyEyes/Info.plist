@@ -33,6 +33,8 @@
 	<string>Clarity uses the rear camera for local scanning. Camera frames are not uploaded.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Connect to a development backend on your local network if configured.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Clarity posts an urgent alert when an object is very close, so you are warned even while using another app.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

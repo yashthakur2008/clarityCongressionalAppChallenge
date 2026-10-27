@@ -114,6 +114,8 @@ public final class ScannerService extends Service {
         channel.setDescription("Shows scan status and lets you stop camera scanning.");
         channel.setSound(null, null);
         getSystemService(NotificationManager.class).createNotificationChannel(channel);
+        // Separate high-importance channel for the full-screen "Watch out" warning.
+        ProximityAlerts.createChannel(this);
         try { tone = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 80); }
         catch (RuntimeException ignored) { tone = null; }
         vibrator = Build.VERSION.SDK_INT >= 31
@@ -343,12 +345,33 @@ public final class ScannerService extends Service {
             snapshot = new Snapshot(true, status, detail, frames, latencyMs, jpeg, detections, zone, alert);
             for (Listener listener : listeners) listener.onSnapshot(snapshot);
             long now = SystemClock.elapsedRealtime();
-            if (alert && now - lastAlertAt >= 3000) { lastAlertAt = now; testAlert(alertSound, alertVibration); }
+            if (alert && now - lastAlertAt >= 3000) {
+                lastAlertAt = now;
+                // Full-screen warning first: it is what breaks through the foreground app.
+                // Falls back to a heads-up notification when the OS withholds full-screen intents.
+                boolean fullScreen = ProximityAlerts.raise(this, topLabel(detections), detail);
+                // Without the full-screen takeover the local tone/vibration carries the alert.
+                if (!fullScreen) testAlert(alertSound, alertVibration);
+            }
             if (alert || now - lastNotificationAt >= 1000) {
                 lastNotificationAt = now;
                 getSystemService(NotificationManager.class).notify(NOTIFICATION, notification(status));
             }
         });
+    }
+
+    /** Highest-confidence detection label, used as the "Watch out" subtitle. */
+    private static String topLabel(JSONArray detections) {
+        String best = "";
+        double bestScore = -1;
+        for (int index = 0; index < detections.length(); index++) {
+            JSONObject item = detections.optJSONObject(index);
+            if (item == null) continue;
+            double score = item.optDouble("confidence", item.optDouble("score", 0));
+            String label = item.optString("label", item.optString("name", ""));
+            if (!label.isEmpty() && score > bestScore) { bestScore = score; best = label; }
+        }
+        return best;
     }
 
     void testAlert(boolean sound, boolean vibration) {
@@ -371,6 +394,7 @@ public final class ScannerService extends Service {
         if (cameraHandler != null) cameraHandler.post(this::closeCamera);
         if (tone != null) tone.stopTone();
         if (vibrator != null) vibrator.cancel();
+        ProximityAlerts.clear(this);
         if (previous != null && previousSession != null) submitNetwork(() -> deleteQuietly(previous.baseUrl, previousSession));
         stopForeground(STOP_FOREGROUND_REMOVE);
         setIdle("Scanning stopped", reason);

@@ -70,6 +70,18 @@ There is no floating preview in this core sample. It does not need overlay permi
 
 Notification permission is optional at the OS level. If it is denied, Android may omit the notification from the drawer even though its active-service indicator remains. The app explains this and keeps its own Stop control. [Android's notification-permission documentation](https://developer.android.com/develop/ui/views/notifications/notification-permission) describes that behavior. Device volume, Do Not Disturb, haptic preferences, and hardware affect alerts; the Test button makes those checks explicit. The app does not record audio or attempt to take audio focus from Reels.
 
+## Breaking through the foreground app
+
+When the backend confirms a near object, the app tries to interrupt whatever the user is doing. Android permits this more directly than iOS does.
+
+- `ProximityAlerts` creates a second notification channel, **Proximity alerts**, at `NotificationManager.IMPORTANCE_HIGH`, separate from the low-importance scanning channel. Its sound uses `AudioAttributes.USAGE_ALARM`.
+- The channel calls `setBypassDnd(true)`. That request **only takes effect if the user grants this app a Do Not Disturb override** in system settings. Without the override the channel still works and simply respects DND. The call is wrapped so a refusal degrades instead of crashing.
+- The near-object notification uses `setFullScreenIntent(pendingIntent, true)` with `Notification.CATEGORY_ALARM` and `PRIORITY_HIGH`, which can launch `AlertActivity` over the foreground app. `USE_FULL_SCREEN_INTENT` is declared in the manifest.
+- On **Android 14+ (API 34+) `USE_FULL_SCREEN_INTENT` is restricted** and is not granted to a general-purpose app by default. The code asks `NotificationManager.canUseFullScreenIntent()` and, when it returns false, posts a heads-up notification only and plays the local tone/vibration instead. **The full-screen takeover is not guaranteed on API 34+.** See [the time-sensitive notification guidance](https://developer.android.com/training/notify-user/time-sensitive).
+- `AlertActivity` fills the screen with **Watch out**, the highest-confidence detected label, the alert detail, and a **Dismiss** button. It calls `setShowWhenLocked(true)` and `setTurnScreenOn(true)` (with pre-27 window-flag fallbacks, since `minSdk` is 26), vibrates a short sharp `0/160/70/160` waveform with `VibrationAttributes.USAGE_ALARM` on API 33+, and plays the default alarm tone through `AudioAttributes.USAGE_ALARM` at full player volume. The alarm stream stays audible when the ringer is silenced, subject to the device's alarm volume. It auto-dismisses after 6 seconds and stops all feedback on pause or destroy.
+- Wording (**Watch out**, **Dismiss**) is kept in step with the iOS app so both products tell the same story. Android holds the canonical strings in `ProximityAlerts`.
+- Notification posting is still gated on `POST_NOTIFICATIONS`. If the user denies notifications, `raise()` returns false and the local tone/vibration path carries the alert.
+
 ## Physical-phone acceptance pass
 
 These checks remain to be run on a real phone:
@@ -79,14 +91,32 @@ These checks remain to be run on a real phone:
 3. Open Instagram Reels while retaining camera direction toward that scene. Check that the scanning notification remains, the backend continues receiving requests, and alerts occur. Measure full capture/request/alert latency; do not infer it from the older backend-only measurements.
 4. Stop from the notification during an upload. Confirm camera indicators and network activity cease and no late alert plays. Repeat quick Stop/Start, rotation, app switching, task removal, and a second app requesting the camera.
 5. Disconnect and reconnect the backend; verify unavailable state and recovery. Try sound-only, vibration-only, and visual-only (both off), including the device's actual volume and haptic settings.
+6. With Instagram Reels in the foreground, trigger a near object and confirm the full-screen **Watch out** screen appears over it, shows the detected label, vibrates, sounds on the alarm stream with the ringer silenced, and auto-dismisses. Repeat with the device locked. On an Android 14+ device, check `canUseFullScreenIntent()`: if it is false, confirm the heads-up fallback plus local tone/vibration still alerts the user. Also test with and without a Do Not Disturb override granted.
 
 General object detection does not identify every walking hazard. This backend has no dedicated curb, stair, pothole, cone, or construction-barrier class. Image-space boxes do not establish physical distance, ground contact, or a clear path. Demo this as an experimental awareness prototype in a controlled scene.
 
 ## Verification performed here
 
-The host has no Java runtime, Android SDK, Android Studio, `adb`, or connected Android device. Running `./gradlew :app:assembleDebug` stops with **Unable to locate a Java Runtime** before compilation. No JDK, SDK, emulator, or Android Studio was installed. This is source implementation and static review, not a successful Android compilation or verified background-camera demonstration.
+**This app was NOT compiled.** The host has no Android SDK (`~/Library/Android/sdk` does not exist), no `adb`, no emulator, and no connected device, so `android.jar` is unavailable and `:app:assembleDebug` cannot link.
 
-Static checks passed: all three Android XML files parse, the Gradle shell wrapper passes `sh -n`, and the wrapper JAR contains `GradleWrapperMain` with the expected official checksum. An independent source review found no additional compile/API-signature issue; an Android build is still required.
+A JDK *is* present, so the build was actually attempted and failed for toolchain reasons, not silently skipped:
+
+| JDK attempted | `./gradlew :app:assembleDebug` result |
+| --- | --- |
+| Corretto 11 | `Android Gradle plugin requires Java 17 to run. You are currently using Java 11.` |
+| OpenJDK 24.0.1 | `Unsupported class file major version 68` (too new for Gradle 8.13) |
+| Temurin 25.0.1 | `Unsupported class file major version 69` |
+
+No JDK in the 17-21 range that the Android Gradle plugin and Gradle 8.13 both accept is installed, and no Android SDK is installed either. Both would be required for a real build.
+
+What *was* executed here:
+
+- `node samples/android/tests/alerts.test.mjs` — **51/51 source-contract checks pass**. These assert the manifest `USE_FULL_SCREEN_INTENT` permission and `AlertActivity` registration, `IMPORTANCE_HIGH` with graceful `setBypassDnd`, `setFullScreenIntent(pendingIntent, true)` with `CATEGORY_ALARM`/`PRIORITY_HIGH`, the `canUseFullScreenIntent()` API-34 fallback branch, `USAGE_ALARM` audio and vibration attributes, `setShowWhenLocked`/`setTurnScreenOn`, the vibration waveform, auto-dismiss, feedback teardown, and the `ScannerService` wiring. They also well-formedness-parse every XML resource under `app/src/main`. **These are static source contracts, not a compile and not a runtime test.**
+- `javac` over all `app/src/main/java/dev/myeyes/sample/*.java`: every reported error is a missing `android.*`/`org.json` package or a symbol from one. No syntax error and no non-Android diagnostic. That shows the sources parse; it does **not** verify Android API signatures, resource references, or manifest merging.
+
+Unverified: that the app builds, installs, runs, that the full-screen intent actually takes over the foreground app on any API level, that `canUseFullScreenIntent()` returns what is expected on a real Android 14+ device, or that the alarm tone and vibration are perceptible on real hardware. All of that needs the physical-phone pass below.
+
+Static checks previously recorded: all Android XML files parse, the Gradle shell wrapper passes `sh -n`, and the wrapper JAR contains `GradleWrapperMain` with the expected official checksum.
 
 The wrapper JAR was downloaded from Gradle's official `v8.13.0` source tag and matches the [published checksum](https://gradle.org/release-checksums/):
 
