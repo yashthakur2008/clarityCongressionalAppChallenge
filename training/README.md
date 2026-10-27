@@ -6,6 +6,8 @@ This is an isolated YOLOX-Nano 416×416 experiment. It does **not** replace the 
 
 The standard COCO 80-class head covers people, common vehicles, animals, furniture, bags, bottles, books and other everyday objects. It does **not** label stairs, curbs, potholes, uneven ground, construction machinery, safety PPE, cables or general obstacles. A road/classroom image is not a dedicated road/classroom class. This model is not a safety-certified navigation system.
 
+For the unnamed-obstacle-on-the-floor gap specifically, see [`FLOOR_SEGMENTATION.md`](./FLOOR_SEGMENTATION.md). It documents a working no-training LiDAR ground-plane detector (`ground_plane.py`, 23 passing synthetic tests) and a not-yet-launched learned floor-mask run that is blocked on a missing RunPod credential.
+
 The requested 93.5% is a **target precision operating point at IoU 0.50**, not a guaranteed overall accuracy or mAP. Threshold is selected on tuning data, with recall and COCO mAP50/mAP50:95 reported alongside it. A high threshold may attain high precision while missing most objects. If no threshold meets the target, this is reported honestly. No threshold or checkpoint selection may use final-test results.
 
 ## Reproducibility
