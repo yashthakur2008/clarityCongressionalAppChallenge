@@ -23,6 +23,7 @@
 		B10000000000000000000015 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000015 /* Assets.xcassets */; };
 		B10000000000000000000016 /* CenterDepthSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000016 /* CenterDepthSensor.swift */; };
 		B10000000000000000000017 /* DetectorRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000017 /* DetectorRecovery.swift */; };
+		B10000000000000000000023 /* ScanCadence.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000023 /* ScanCadence.swift */; };
 		B10000000000000000000018 /* ModelFirstStartup.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000018 /* ModelFirstStartup.swift */; };
 		B10000000000000000000019 /* ProximityPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000019; };
 		B10000000000000000000020 /* ProximityFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000020; };
@@ -49,6 +50,7 @@
 		F10000000000000000000015 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F10000000000000000000016 /* CenterDepthSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CenterDepthSensor.swift; sourceTree = "<group>"; };
 		F10000000000000000000017 /* DetectorRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorRecovery.swift; sourceTree = "<group>"; };
+		F10000000000000000000023 /* ScanCadence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanCadence.swift; sourceTree = "<group>"; };
 		F10000000000000000000018 /* ModelFirstStartup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelFirstStartup.swift; sourceTree = "<group>"; };
 		F10000000000000000000019 /* ProximityPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityPolicy.swift; sourceTree = "<group>"; };
 		F10000000000000000000020 /* ProximityFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityFeedback.swift; sourceTree = "<group>"; };
@@ -92,6 +94,7 @@
 				F10000000000000000000015 /* Assets.xcassets */,
 				F10000000000000000000016 /* CenterDepthSensor.swift */,
 				F10000000000000000000017 /* DetectorRecovery.swift */,
+				F10000000000000000000023 /* ScanCadence.swift */,
 				F10000000000000000000018 /* ModelFirstStartup.swift */,
 				F10000000000000000000021 /* ProximityAlertRouting.swift */,
 				F10000000000000000000020 /* ProximityFeedback.swift */,
@@ -183,6 +186,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B10000000000000000000017 /* DetectorRecovery.swift in Sources */,
+				B10000000000000000000023 /* ScanCadence.swift in Sources */,
 				B10000000000000000000018 /* ModelFirstStartup.swift in Sources */,
 				B10000000000000000000021 /* ProximityAlertRouting.swift in Sources */,
 				B10000000000000000000020 /* ProximityFeedback.swift in Sources */,

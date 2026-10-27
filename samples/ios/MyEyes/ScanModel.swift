@@ -260,7 +260,7 @@ final class ScanModel: ObservableObject {
     }
 
     func testAlert() {
-        alerts.deliver(preferences.alertModes, message: "This is a Clarity test alert.")
+        alerts.testAlert(preferences.alertModes, message: "This is a Clarity test alert.")
         if preferences.alertModes.isEmpty { detail = "Visual-only mode. Object warnings appear on this screen." }
     }
 
@@ -304,7 +304,7 @@ final class ScanModel: ObservableObject {
                 roundTripMs = Int(age * 1000)
                 checkedFrames += 1
                 if checkedFrames == 1 || checkedFrames % 30 == 0 {
-                    PiPDiagnostics.log("scan.inference", "checked=\(checkedFrames) processingMs=\(result.processingMs) ageMs=\(Int(age * 1000))")
+                    PiPDiagnostics.log("scan.inference", "checked=\(checkedFrames) processingMs=\(result.processingMs) ageMs=\(Int(age * 1000)) confidenceThreshold=\(preferences.confidenceThreshold) detectionCount=\(result.detections.count) inZoneCount=\(result.detections.filter { $0.inZone }.count)")
                 }
                 if age > maxResultAge {
                     clearDisplayedResult()
@@ -359,8 +359,8 @@ final class ScanModel: ObservableObject {
                 }
                 retryDelay = 1
             }
-            // Capture only after the last local inference, with a maximum rate of about three frames/sec.
-            let delay = max(retryDelay, max(0, 1.0 / 3 - (ProcessInfo.processInfo.systemUptime - frame.capturedAt)))
+            // Request only after inference completes: at most 10 fps, slower when inference takes longer.
+            let delay = ScanCadence.delay(elapsed: ProcessInfo.processInfo.systemUptime - frame.capturedAt, retryDelay: retryDelay)
             do { try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000)) } catch { return }
             guard generation == current, phase == .scanning, !Task.isCancelled else { return }
             frameTask = nil
