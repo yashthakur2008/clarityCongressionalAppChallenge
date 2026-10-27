@@ -60,7 +60,7 @@ final class ProximityAlerts {
         if (alarm != null) channel.setSound(alarm, alarmAttributes());
         // Honoured only when the user has granted a DND override; otherwise silently ignored.
         try { channel.setBypassDnd(true); }
-        catch (SecurityException | RuntimeException ignored) { /* No DND override granted. */ }
+        catch (RuntimeException ignored) { /* No DND override granted. */ }
         manager.createNotificationChannel(channel);
     }
 
@@ -119,7 +119,7 @@ final class ProximityAlerts {
             builder.setFullScreenIntent(full, true);
         }
         try { manager.notify(NOTIFICATION_PROXIMITY, builder.build()); }
-        catch (SecurityException | RuntimeException ignored) { return false; /* Notifications denied. */ }
+        catch (RuntimeException ignored) { return false; /* Notifications denied. */ }
         return fullScreen;
     }
 

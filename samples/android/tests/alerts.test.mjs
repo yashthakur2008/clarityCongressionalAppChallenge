@@ -1,7 +1,6 @@
 // Source-contract tests for the Android near-object alert path.
 //
-// This machine has a JDK but NO Android SDK, so samples/android has never been compiled here.
-// These checks are therefore source contracts, not a compile or a runtime test: they assert the
+// These checks are source contracts, not a compile or a runtime test: they assert the
 // API calls and manifest entries that the "break through whatever the user is doing" behavior
 // depends on, and that every XML resource parses. They cannot prove the app builds or runs.
 //
@@ -34,6 +33,14 @@ const manifest = read("app/src/main/AndroidManifest.xml");
 const alerts = read("app/src/main/java/dev/myeyes/sample/ProximityAlerts.java");
 const activity = read("app/src/main/java/dev/myeyes/sample/AlertActivity.java");
 const service = read("app/src/main/java/dev/myeyes/sample/ScannerService.java");
+
+group("Build compatibility regressions", () => {
+  check("runtime exception handlers include SecurityException without invalid subclass multi-catch",
+    !/catch\s*\([^)]*(?:SecurityException\s*\|\s*RuntimeException|RuntimeException\s*\|\s*SecurityException)/.test(alerts)
+      && (alerts.match(/catch\s*\(RuntimeException ignored\)/g) || []).length >= 2);
+  check("API26 base theme does not reference API27-only navigation bar attribute",
+    !read("app/src/main/res/values/styles.xml").includes("android:windowLightNavigationBar"));
+});
 
 group("AndroidManifest", () => {
   check(
@@ -200,7 +207,7 @@ group("XML resources parse", () => {
 
 console.log(`\n${checks - failures}/${checks} checks passed`);
 if (failures > 0) {
-  console.log("NOTE: source contracts only. No Android SDK on this machine, so nothing was compiled.");
+  console.log("NOTE: source contracts only. This test does not compile or run the Android app.");
   process.exit(1);
 }
-console.log("Source contracts hold. NOT a compile: no Android SDK present, so the app was never built here.");
+console.log("Source contracts hold. This test does not compile or run the Android app.");

@@ -6,6 +6,20 @@ The app uses **real backend COCO-SSD inference**. It contains no fake detector, 
 
 **Fastest physical-phone setup:** connect an Android phone over USB with USB debugging enabled, run `adb reverse tcp:3001 tcp:3001`, and enter `http://127.0.0.1:3001` in the app. This reuses the already-running laptop backend without changing its loopback bind or starting another server.
 
+## Download and sideload the demo
+
+See the repository's [download instructions](../../DOWNLOADS.md) for the GitHub asset named **Clarity-Android-demo.apk**. This is a **debug-signed, debuggable experimental demo**, not a production-signed or Play Store release. It requires Android 8.0 / API 26 or newer and a rear camera. It has no native ABI restriction because it contains no native libraries.
+
+Download the APK on the phone and open it, then allow installation from that browser or file manager when Android asks. Alternatively, with USB debugging enabled:
+
+```sh
+adb install -r Clarity-Android-demo.apk
+```
+
+An existing `dev.myeyes.sample` installation signed with another key cannot be updated with this APK. Uninstalling it first removes its app settings. Future production signing also requires an explicit migration or uninstall. Do not treat the Android Debug certificate as a production publisher identity.
+
+**Installation is not a complete setup:** the Android app uploads rear-camera JPEGs to a separately running Clarity backend for inference. It does not perform offline inference and does not have native iOS feature parity. Configure a trusted HTTPS backend, or use the controlled USB/local HTTP setup below. The debug build permits cleartext HTTP, so do not send camera frames across an untrusted network. Camera and notification permissions are requested in the app. Full-screen alerts remain restricted by Android and user settings.
+
 ## Open and run
 
 1. In Android Studio, choose **Open** and select this `samples/android` folder. Allow Gradle sync and install Android SDK Platform 36 if prompted.
@@ -97,26 +111,27 @@ General object detection does not identify every walking hazard. This backend ha
 
 ## Verification performed here
 
-**This app was NOT compiled.** The host has no Android SDK (`~/Library/Android/sdk` does not exist), no `adb`, no emulator, and no connected device, so `android.jar` is unavailable and `:app:assembleDebug` cannot link.
+On 2026-10-26, this project was compiled using an isolated **Corretto JDK 17.0.21**, Android SDK Platform **36**, Gradle **8.13**, and Android Gradle Plugin **8.13.2**. The actual compiler exposed two invalid subclass multi-catches in `ProximityAlerts`, which were corrected. Android lint exposed an API-27-only theme attribute in the API-26 base resources, which was removed because its false value was redundant.
 
-A JDK *is* present, so the build was actually attempted and failed for toolchain reasons, not silently skipped:
+Verification commands:
 
-| JDK attempted | `./gradlew :app:assembleDebug` result |
-| --- | --- |
-| Corretto 11 | `Android Gradle plugin requires Java 17 to run. You are currently using Java 11.` |
-| OpenJDK 24.0.1 | `Unsupported class file major version 68` (too new for Gradle 8.13) |
-| Temurin 25.0.1 | `Unsupported class file major version 69` |
+```sh
+./gradlew --no-daemon :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease
+node tests/alerts.test.mjs
+apksigner verify --verbose --print-certs app/build/outputs/apk/debug/app-debug.apk
+aapt dump badging app/build/outputs/apk/debug/app-debug.apk
+adb devices -l
+```
 
-No JDK in the 17-21 range that the Android Gradle plugin and Gradle 8.13 both accept is installed, and no Android SDK is installed either. Both would be required for a real build.
+The debug APK is signed with an **Android Debug** RSA-2048 certificate and verifies with APK signature scheme v2. Manifest inspection confirms package `dev.myeyes.sample`, version `0.1.0` / code `1`, minimum SDK 26, target SDK 36, camera foreground-service permissions, and only the launcher activity exported. Debug allows cleartext traffic. Release disables it.
 
-What *was* executed here:
+`assembleRelease` produces `app/build/outputs/apk/release/app-release-unsigned.apk`. **That artifact is unsigned and cannot be installed as-is.** A durable, privately managed release signing key is required before it can become a production download. No signing secrets are committed, and the runtime dependency reports for debug and release contain no third-party libraries. A source/build-config scan for common credential patterns found none, and APK ZIP inspection found only DEX, manifest, resources, and Android build metadata, not keys or configuration secrets. These checks are not a comprehensive security audit.
 
-- `node samples/android/tests/alerts.test.mjs` — **51/51 source-contract checks pass**. These assert the manifest `USE_FULL_SCREEN_INTENT` permission and `AlertActivity` registration, `IMPORTANCE_HIGH` with graceful `setBypassDnd`, `setFullScreenIntent(pendingIntent, true)` with `CATEGORY_ALARM`/`PRIORITY_HIGH`, the `canUseFullScreenIntent()` API-34 fallback branch, `USAGE_ALARM` audio and vibration attributes, `setShowWhenLocked`/`setTurnScreenOn`, the vibration waveform, auto-dismiss, feedback teardown, and the `ScannerService` wiring. They also well-formedness-parse every XML resource under `app/src/main`. **These are static source contracts, not a compile and not a runtime test.**
-- `javac` over all `app/src/main/java/dev/myeyes/sample/*.java`: every reported error is a missing `android.*`/`org.json` package or a symbol from one. No syntax error and no non-Android diagnostic. That shows the sources parse; it does **not** verify Android API signatures, resource references, or manifest merging.
+Both assemble tasks and both lint tasks pass. Each lint report contains **0 errors and 13 warnings**, including platform ExifInterface, backup rules, localization, and draw allocations. These warnings were not suppressed.
 
-Unverified: that the app builds, installs, runs, that the full-screen intent actually takes over the foreground app on any API level, that `canUseFullScreenIntent()` returns what is expected on a real Android 14+ device, or that the alarm tone and vibration are perceptible on real hardware. All of that needs the physical-phone pass below.
+The 53 source-contract checks pass, including XML parsing. They are static contracts, not runtime tests. `adb devices -l` returned no devices. **Installation, camera capture, backend communication, background scanning, real alert latency, full-screen takeover, sound, and vibration remain unverified on hardware.** Use the physical-phone acceptance checklist above before relying on the demo. This is not a validated safety or navigation aid.
 
-Static checks previously recorded: all Android XML files parse, the Gradle shell wrapper passes `sh -n`, and the wrapper JAR contains `GradleWrapperMain` with the expected official checksum.
+The wrapper distribution checksum is pinned and the JAR retains its official checksum.
 
 The wrapper JAR was downloaded from Gradle's official `v8.13.0` source tag and matches the [published checksum](https://gradle.org/release-checksums/):
 
