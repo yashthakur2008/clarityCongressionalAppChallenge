@@ -550,6 +550,15 @@ private struct SettingsView: View {
                         Text("Confidence threshold · \(Int(preferences.confidenceThreshold * 100))%")
                         Slider(value: $preferences.confidenceThreshold, in: 0.4...0.95, step: 0.05)
                             .accessibilityLabel("Object classification confidence threshold")
+                        Text("Higher thresholds hide more objects. Start at 45%; lower scores can include more incorrect labels.")
+                            .font(.caption).foregroundStyle(.secondary)
+                        if preferences.confidenceThreshold >= 0.7 {
+                            Label("This high threshold can miss chairs, backpacks and other objects.", systemImage: "exclamationmark.triangle")
+                                .font(.caption).foregroundStyle(.orange)
+                        }
+                        Button("Use recommended 45%") {
+                            preferences.confidenceThreshold = ScanPreferences.candidateConfidenceDefault
+                        }
                     }
                     Stepper("Repeat after \(preferences.cooldownMs / 1000) seconds", value: $preferences.cooldownMs, in: 1000...10000, step: 1000)
                     Text("Confidence is a classification score, not a distance or safety estimate.")
