@@ -137,6 +137,12 @@ final class AlertPlayer: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDel
         // PiP owns the active audio session. Do not deactivate it here.
     }
 
+    /// Exercise the notification channel as well as the selected in-app outputs.
+    func testAlert(_ modes: [AlertMode], message: String) {
+        deliver(modes, message: message)
+        if !modes.isEmpty { criticalAlerts.postTestAlert() }
+    }
+
     func deliver(_ modes: [AlertMode], message: String) {
         stopProximity()
         stopGenericOutputs()

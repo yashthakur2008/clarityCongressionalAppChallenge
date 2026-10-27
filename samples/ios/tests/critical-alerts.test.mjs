@@ -113,3 +113,49 @@ test('CriticalAlerts is registered in the Xcode target', () => {
   assert.match(project, /CriticalAlerts\.swift in Sources/);
   assert.match(project, /path = CriticalAlerts\.swift/);
 });
+
+test('foreground notifications explicitly present banners and sound', () => {
+  const source = alerts();
+  assert.match(source, /UNUserNotificationCenterDelegate/);
+  assert.match(source, /center\?\.delegate = self/);
+  assert.match(source, /nonisolated func userNotificationCenter/);
+  assert.match(source, /willPresent notification: UNNotification/);
+  assert.match(source, /completionHandler\(\[\.banner, \.list, \.sound\]\)/);
+});
+
+test('returning from Settings refreshes authorization without another permission prompt', () => {
+  const source = alerts();
+  assert.match(source, /UIApplication\.didBecomeActiveNotification/);
+  assert.match(source, /#selector\(refreshAuthorization\)/);
+  const refresh = source.slice(source.indexOf('@objc private func refreshAuthorization'), source.indexOf('/// At most one alert'));
+  assert.match(refresh, /notificationSettings\(\)/);
+  assert.doesNotMatch(refresh, /requestAuthorization\(options:/);
+  assert.match(source, /case \.authorized, \.provisional, \.ephemeral:/);
+  assert.match(source, /isAuthorized = false/);
+});
+
+test('test alerts use honest notification wording without changing generic detection delivery', () => {
+  assert.match(player(), /func testAlert\(_ modes: \[AlertMode\], message: String\)/);
+  assert.match(player(), /if !modes\.isEmpty \{ criticalAlerts\.postTestAlert\(\) \}/);
+  assert.match(alerts(), /Clarity test notification/);
+  assert.match(alerts(), /not an obstacle warning/);
+});
+
+test('notification service executes permission transitions, delegate, throttle and test delivery with framework doubles', { skip: process.platform !== 'darwin' }, async () => {
+  const { execFileSync } = await import('node:child_process');
+  const { mkdirSync, mkdtempSync, writeFileSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const { homedir } = await import('node:os');
+  const { fileURLToPath } = await import('node:url');
+  const root = process.env.JCODE_SCRATCH_DIR || join(homedir(), '.jcode', 'scratch');
+  mkdirSync(root, { recursive: true });
+  const dir = mkdtempSync(join(root, 'notification-tests-'));
+  // Execute production logic with OS boundaries doubled. Actual delegate registration and
+  // UIApplication notification wiring are separately source-checked and Release-compiled.
+  const source = alerts().replace('import UserNotifications', '').replace('import UIKit', '')
+    .replace(/        NotificationCenter.default.addObserver\(self,[\s\S]*?object: nil\)\n/, '')
+    .replace('@objc private func refreshAuthorization', 'func refreshAuthorization');
+  writeFileSync(join(dir, 'CriticalAlerts.swift'), source);
+  execFileSync('swiftc', ['-parse-as-library', join(dir, 'CriticalAlerts.swift'), fileURLToPath(new URL('CriticalAlertsTests.swift', import.meta.url)), '-o', join(dir, 'tests')], { timeout: 60000 });
+  assert.match(execFileSync(join(dir, 'tests'), { encoding: 'utf8', timeout: 10000 }), /PASS notification service/);
+});

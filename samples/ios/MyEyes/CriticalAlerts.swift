@@ -1,5 +1,6 @@
 import Foundation
 import UserNotifications
+import UIKit
 
 /// Which attention level the app is actually able to use, never which one was wished for.
 enum CriticalAlertLevel: String {
@@ -25,7 +26,7 @@ enum CriticalAlertLevel: String {
 /// capability; when that is absent iOS silently downgrades delivery to `.active`, which is a fine
 /// outcome and cannot fail at runtime.
 @MainActor
-final class CriticalAlerts {
+final class CriticalAlerts: NSObject, UNUserNotificationCenterDelegate {
     static let throttleInterval: TimeInterval = 3
 
     private(set) var isAuthorized = false
@@ -45,6 +46,20 @@ final class CriticalAlerts {
          clock: @escaping @MainActor () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) {
         self.center = center
         self.clock = clock
+        super.init()
+        // The center retains its delegate weakly. AlertPlayer retains this service.
+        center?.delegate = self
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshAuthorization),
+                                               name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+
+    deinit { NotificationCenter.default.removeObserver(self) }
+
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                            willPresent notification: UNNotification,
+                                            withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // iOS otherwise suppresses notifications while the scanner is in the foreground.
+        completionHandler([.banner, .list, .sound])
     }
 
     /// `current()` traps in processes without a bundled app (unit test hosts, command line tools).
@@ -61,19 +76,35 @@ final class CriticalAlerts {
         guard let center, !didRequest else { return }
         didRequest = true
         Task { @MainActor in
-            var granted = false
             do {
-                granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+                _ = try await center.requestAuthorization(options: [.alert, .sound, .badge])
             } catch {
                 PiPDiagnostics.error("notify.authorize.failure", error)
+                didRequest = false
                 isAuthorized = false
                 isTimeSensitiveAuthorized = false
                 return
             }
             let settings = await center.notificationSettings()
-            isAuthorized = granted && settings.authorizationStatus != .denied
-            isTimeSensitiveAuthorized = isAuthorized && settings.timeSensitiveSetting == .enabled
+            apply(settings)
             PiPDiagnostics.log("notify.authorize", "level=\(achievedLevel.rawValue)")
+        }
+    }
+
+    private func apply(_ settings: UNNotificationSettings) {
+        switch settings.authorizationStatus {
+        case .authorized, .provisional, .ephemeral: isAuthorized = true
+        default: isAuthorized = false
+        }
+        isTimeSensitiveAuthorized = isAuthorized && settings.timeSensitiveSetting == .enabled
+    }
+
+    /// Users can grant or revoke permission in Settings without restarting this process.
+    @objc private func refreshAuthorization() {
+        guard let center else { return }
+        Task { @MainActor in
+            apply(await center.notificationSettings())
+            PiPDiagnostics.log("notify.refresh", "level=\(achievedLevel.rawValue)")
         }
     }
 
@@ -93,6 +124,24 @@ final class CriticalAlerts {
         content.sound = .default
         content.relevanceScore = 1
         addNotificationRequest(center: center, content: content, label: label)
+    }
+
+    func postTestAlert() {
+        guard let center else { return }
+        Task { @MainActor in
+            // Test immediately after returning from Settings must use current permission.
+            apply(await center.notificationSettings())
+            guard isAuthorized else { return }
+            let content = UNMutableNotificationContent()
+            content.title = "Clarity test notification"
+            content.body = "Notifications are enabled. This is a test, not an obstacle warning."
+            content.interruptionLevel = isTimeSensitiveAuthorized ? .timeSensitive : .active
+            content.sound = .default
+            let request = UNNotificationRequest(identifier: "clarity.test.\(UUID().uuidString)", content: content, trigger: nil)
+            center.add(request) { error in
+                if let error { PiPDiagnostics.error("notify.test.failure", error) }
+            }
+        }
     }
 
     private func addNotificationRequest(center: UNUserNotificationCenter, content: UNMutableNotificationContent, label: String) {
