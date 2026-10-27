@@ -32,7 +32,9 @@ An unsigned `.app` proves compilation only. It is not an installable judge distr
 
 ## Frame and alert behavior
 
-The camera captures a fresh JPEG only after the previous local inference completes, capped near three analyses per second. Frames retain the existing maximum 640-pixel long edge and JPEG quality 0.65. WebKit's WASM process performs inference without blocking the capture queue.
+**Experimental unknown-region fallback:** the native app also uses local dominant-floor appearance contrast to propose compact, enclosed, persistent regions as **Possible unknown object**. This is not an additional trained class, a classification probability, measured distance or universal obstacle detection. Broad transitions and seams are rejected heuristically, but small rugs, stains and hard shadows can still resemble objects. See [the exact contract and validation](../../docs/UNKNOWN_OBJECT_FALLBACK.md). The browser app is unchanged.
+
+The camera captures a fresh JPEG only after the previous local inference completes. The minimum interval is 100 ms (a ceiling of 10 analyses per second, not a promised device rate). Slow inference adds no cadence wait; recovery retains its retry delay. Frames retain the existing maximum 640-pixel long edge and JPEG quality 0.65. WebKit's WASM process performs inference without blocking the capture queue.
 
 `OfflineDetector.swift` serves packaged files over the private `stepsense://offline/` scheme. It rejects other navigation and uses a restrictive page Content Security Policy. JPEGs are passed to JavaScript in memory and never uploaded. There is no local HTTP listener. `APIClient.swift` retains the shared response/preferences types and legacy unused backend client, but `ScanModel` no longer constructs or calls that client.
 

@@ -133,6 +133,25 @@ enum ProximitySource: String, Equatable {
 }
 
 struct Detection: Decodable, Equatable {
+    static let unknownObjectLabel = "Possible unknown object"
+    static let unknownObjectMessage = "Possible unknown object in camera zone. Check your surroundings."
+    var isUnknownObject: Bool { label == Self.unknownObjectLabel }
+    static let unknownObjectMaximumAge: TimeInterval = 0.75
+    func isFreshAppearance(capturedAt: TimeInterval, now: TimeInterval) -> Bool {
+        let age = now - capturedAt
+        return age.isFinite && age >= 0 && age < Self.unknownObjectMaximumAge
+    }
+
+
+    /// Appearance regions are not classified objects or distance measurements.
+    func overlayLabel(at now: TimeInterval, compact: Bool = false) -> String {
+        if isUnknownObject { return "Possible unknown object\nAppearance contrast · unclassified" }
+        let band = freshProximityBand(at: now).title
+        let description = proximityDescription(at: now) ?? "proximity unavailable"
+        if compact { return "\(band)\n\(description)" }
+        return "\(label)  \(Int(confidence * 100))%\n\(band) · \(description)"
+    }
+
     let label: String
     let confidence: Double
     let bbox: NormalizedBox
@@ -156,6 +175,18 @@ struct Detection: Decodable, Equatable {
 
     /// Native capture metadata only. Visual area is a heuristic, never a distance in meters.
     mutating func enrichProximity(lidarCapable: Bool, capturedAt: TimeInterval) {
+        guard !isUnknownObject else {
+            depthMeters = nil
+            depthRequested = nil
+            depthExpiresAt = nil
+            proximitySource = nil
+            proximityExpiresAt = nil
+            visualProximityArea = nil
+            proximityBand = nil
+            proximityTrackID = nil
+            proximityConfirmed = nil
+            return
+        }
         proximitySource = lidarCapable ? .lidar : .visual
         proximityExpiresAt = capturedAt + proximityMaximumAge
         visualProximityArea = nil
@@ -177,6 +208,7 @@ struct Detection: Decodable, Equatable {
     }
 
     func freshProximitySource(at now: TimeInterval) -> ProximitySource? {
+        guard !isUnknownObject else { return nil }
         // Legacy native depth remains supported. Explicit LiDAR never falls back to visual.
         if proximitySource != .visual { return freshProximityDepth(at: now) == nil ? nil : .lidar }
         guard Self.validVisualBox(bbox), let area = visualProximityArea,
@@ -207,7 +239,7 @@ struct Detection: Decodable, Equatable {
     /// Expiry is capture uptime + 0.75s. Reject future captures as well as expired ones.
     var proximityMaximumAge: TimeInterval { 0.75 }
     func freshProximityDepth(at now: TimeInterval) -> Double? {
-        guard proximitySource != .visual, depthRequested == true,
+        guard !isUnknownObject, proximitySource != .visual, depthRequested == true,
               let depthMeters, depthMeters.isFinite, (0.2...5).contains(depthMeters),
               let depthExpiresAt, depthExpiresAt.isFinite, now.isFinite,
               now < depthExpiresAt, depthExpiresAt - now <= proximityMaximumAge else { return nil }
@@ -229,7 +261,7 @@ struct Detection: Decodable, Equatable {
 
     var depthLabel: String? { depthLabel(at: ProcessInfo.processInfo.systemUptime) }
     func depthLabel(at now: TimeInterval) -> String? {
-        guard depthRequested == true else { return nil }
+        guard !isUnknownObject, depthRequested == true else { return nil }
         guard let depthMeters, depthMeters.isFinite, depthMeters > 0,
               let depthExpiresAt, now.isFinite, depthExpiresAt.isFinite, now < depthExpiresAt else { return "depth unavailable" }
         return String(format: "depth ≈%.1f m", depthMeters)

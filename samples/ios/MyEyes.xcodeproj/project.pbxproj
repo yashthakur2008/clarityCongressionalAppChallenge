@@ -13,6 +13,7 @@
 		B10000000000000000000004 /* AlertPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000004 /* AlertPlayer.swift */; };
 		B10000000000000000000005 /* ScanModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000005 /* ScanModel.swift */; };
 		B10000000000000000000006 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000006 /* ScannerView.swift */; };
+		B10000000000000000000050 /* IntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000050 /* IntroView.swift */; };
 		B10000000000000000000009 /* PictureInPicture.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000009 /* PictureInPicture.swift */; };
         B10000000000000000000010 /* OfflineDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000010; };
         B10000000000000000000011 /* OfflineDetector in Resources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000011; };
@@ -22,10 +23,12 @@
 		B10000000000000000000015 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000015 /* Assets.xcassets */; };
 		B10000000000000000000016 /* CenterDepthSensor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000016 /* CenterDepthSensor.swift */; };
 		B10000000000000000000017 /* DetectorRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000017 /* DetectorRecovery.swift */; };
+		B10000000000000000000023 /* ScanCadence.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000023 /* ScanCadence.swift */; };
 		B10000000000000000000018 /* ModelFirstStartup.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000018 /* ModelFirstStartup.swift */; };
 		B10000000000000000000019 /* ProximityPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000019; };
 		B10000000000000000000020 /* ProximityFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000020; };
 		B10000000000000000000021 /* ProximityAlertRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000021; };
+		B10000000000000000000022 /* CriticalAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000022; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +38,7 @@
 		F10000000000000000000004 /* AlertPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertPlayer.swift; sourceTree = "<group>"; };
 		F10000000000000000000005 /* ScanModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanModel.swift; sourceTree = "<group>"; };
 		F10000000000000000000006 /* ScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerView.swift; sourceTree = "<group>"; };
+		F10000000000000000000050 /* IntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroView.swift; sourceTree = "<group>"; };
 		F10000000000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F10000000000000000000008 /* Clarity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Clarity.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F10000000000000000000009 /* PictureInPicture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictureInPicture.swift; sourceTree = "<group>"; };
@@ -46,10 +50,12 @@
 		F10000000000000000000015 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F10000000000000000000016 /* CenterDepthSensor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CenterDepthSensor.swift; sourceTree = "<group>"; };
 		F10000000000000000000017 /* DetectorRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorRecovery.swift; sourceTree = "<group>"; };
+		F10000000000000000000023 /* ScanCadence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanCadence.swift; sourceTree = "<group>"; };
 		F10000000000000000000018 /* ModelFirstStartup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelFirstStartup.swift; sourceTree = "<group>"; };
 		F10000000000000000000019 /* ProximityPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityPolicy.swift; sourceTree = "<group>"; };
 		F10000000000000000000020 /* ProximityFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityFeedback.swift; sourceTree = "<group>"; };
 		F10000000000000000000021 /* ProximityAlertRouting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityAlertRouting.swift; sourceTree = "<group>"; };
+		F10000000000000000000022 /* CriticalAlerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CriticalAlerts.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +86,7 @@
 				F10000000000000000000004 /* AlertPlayer.swift */,
 				F10000000000000000000005 /* ScanModel.swift */,
 				F10000000000000000000006 /* ScannerView.swift */,
+				F10000000000000000000050 /* IntroView.swift */,
 				F10000000000000000000009 /* PictureInPicture.swift */,
                 F10000000000000000000012,
                 F10000000000000000000014,
@@ -87,10 +94,12 @@
 				F10000000000000000000015 /* Assets.xcassets */,
 				F10000000000000000000016 /* CenterDepthSensor.swift */,
 				F10000000000000000000017 /* DetectorRecovery.swift */,
+				F10000000000000000000023 /* ScanCadence.swift */,
 				F10000000000000000000018 /* ModelFirstStartup.swift */,
 				F10000000000000000000021 /* ProximityAlertRouting.swift */,
 				F10000000000000000000020 /* ProximityFeedback.swift */,
 				F10000000000000000000019 /* ProximityPolicy.swift */,
+				F10000000000000000000022 /* CriticalAlerts.swift */,
 				F10000000000000000000007 /* Info.plist */,
                 F10000000000000000000010,
                 F10000000000000000000011,
@@ -177,10 +186,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				B10000000000000000000017 /* DetectorRecovery.swift in Sources */,
+				B10000000000000000000023 /* ScanCadence.swift in Sources */,
 				B10000000000000000000018 /* ModelFirstStartup.swift in Sources */,
 				B10000000000000000000021 /* ProximityAlertRouting.swift in Sources */,
 				B10000000000000000000020 /* ProximityFeedback.swift in Sources */,
 				B10000000000000000000019 /* ProximityPolicy.swift in Sources */,
+				B10000000000000000000022 /* CriticalAlerts.swift in Sources */,
 				B10000000000000000000016 /* CenterDepthSensor.swift in Sources */,
 				B10000000000000000000001 /* MyEyesApp.swift in Sources */,
 				B10000000000000000000002 /* APIClient.swift in Sources */,
@@ -188,6 +199,7 @@
 				B10000000000000000000004 /* AlertPlayer.swift in Sources */,
 				B10000000000000000000005 /* ScanModel.swift in Sources */,
 				B10000000000000000000006 /* ScannerView.swift in Sources */,
+				B10000000000000000000050 /* IntroView.swift in Sources */,
 				B10000000000000000000009 /* PictureInPicture.swift in Sources */,
                 B10000000000000000000012,
                 B10000000000000000000014,

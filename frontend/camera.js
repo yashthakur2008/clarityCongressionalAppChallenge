@@ -246,6 +246,7 @@ export class CameraFeature {
     this.detectionRunning = false;
     try {
       await this.detector.start({ video: this.video, signal: controller.signal,
+        getCooldownMs: () => this.cooldownMs,
         onObstacle: () => { if (run === this.generation && !controller.signal.aborted && this.isVisible()) this.obstacle(false); },
         onResult: result => {
           if (run === this.generation && !controller.signal.aborted && this.state.phase === 'active' && this.isVisible()) this.acceptResult(result);

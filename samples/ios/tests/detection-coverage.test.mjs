@@ -69,3 +69,11 @@ test('threshold and label coverage stay documented for judges', () => {
   const threshold = Number(native.match(/candidateConfidenceDefault = ([0-9.]+)/)[1]);
   assert.equal(assets.confidenceThreshold, threshold, 'pinned asset manifest threshold is stale');
 });
+
+test('settings explain missed objects and offer explicit restoration of recommended confidence', () => {
+  const source = readFileSync(new URL('../MyEyes/ScannerView.swift', import.meta.url), 'utf8');
+  assert.match(source, /Higher thresholds hide more objects/);
+  assert.match(source, /if preferences\.confidenceThreshold >= 0\.7/);
+  assert.match(source, /This high threshold can miss chairs, backpacks and other objects/);
+  assert.match(source, /Button\("Use recommended 45%"\)\s*\{\s*preferences\.confidenceThreshold = ScanPreferences\.candidateConfidenceDefault/);
+});

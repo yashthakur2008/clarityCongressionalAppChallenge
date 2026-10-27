@@ -32,12 +32,12 @@
       "sha256": "b73c2bdd6a5e19d1623e65882688e47c8adf17bad6f067d20ce423148469197c"
     },
     "detector.js": {
-      "bytes": 3716,
-      "sha256": "29175989011636e978292612bcc0ffa7f862b6cfd4f908d7cfef5b9fd4623d2e"
+      "bytes": 4969,
+      "sha256": "6a04d964af2dee743e1a341914637a4d08bf07c6910922b149de191317682904"
     },
     "index.html": {
-      "bytes": 525,
-      "sha256": "20008fd8facb74f09773f073decefdd3f4a6844aa3d2de0c2f8dcb2f214c9fcd"
+      "bytes": 568,
+      "sha256": "4ec62f422145f541497808cf029017865e8baafe8ffe0d8aee28a8eaeb7cf320"
     },
     "bootstrap.js": {
       "bytes": 601,
@@ -46,6 +46,18 @@
     "ONNX-RUNTIME-LICENSE.txt": {
       "bytes": 1073,
       "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+    },
+    "unknown-objects.js": {
+      "bytes": 9224,
+      "sha256": "8e547964370a78f68d40044761d47fc1147941c31d2e08fc7f8e3be9d8aa2239"
     }
+  },
+  "appearanceFallback": {
+    "method": "dominant-floor appearance contrast",
+    "label": "Possible unknown object",
+    "classifierConfidence": false,
+    "requiredObservations": 3,
+    "maximumAgeMs": 750,
+    "terrainExclusion": "heuristic only, not guaranteed"
   }
 }

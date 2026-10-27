@@ -17,7 +17,14 @@ test('model readiness gates authorization and capture through the production sta
 test('camera session and preview are not initialized while the model is loading', () => {
   assert.match(model, /lazy var camera = CameraCapture\(\)/);
   const view = readFileSync(new URL('../MyEyes/ScannerView.swift', import.meta.url), 'utf8');
-  assert.match(view, /if model\.cameraRunning \{\s*CameraPreview\(session: model\.camera\.session\)/);
+  // Structure may change, but a live preview must exist only inside the running branch.
+  const card = view.slice(view.indexOf('private func cameraCard'));
+  const running = card.indexOf('if model.cameraRunning {');
+  const placeholder = card.indexOf('} else {');
+  const preview = card.indexOf('CameraPreview(session: model.camera.session)');
+  assert.ok(running >= 0 && preview > running && preview < placeholder, 'Preview must be gated by model.cameraRunning');
+  assert.equal(card.split('CameraPreview(session:').length - 1, 1);
+  assert.doesNotMatch(card.slice(placeholder), /CameraPreview|model\.camera\.session/);
   const stop = model.slice(model.indexOf('private func stop(nextPhase:'));
   assert.match(stop, /if cameraInitialized \{/);
 });

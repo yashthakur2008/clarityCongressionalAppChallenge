@@ -44,6 +44,7 @@ enum ScannerPresentation {
 
 struct ScannerView: View {
     @ObservedObject var model: ScanModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showingSettings = false
 
     private var statusColor: Color {
@@ -70,37 +71,55 @@ struct ScannerView: View {
     }
 
     var body: some View {
-        Group {
-            if model.phase == .connecting && !model.cameraRunning {
-                modelLoadingScreen
-            } else {
-                scannerContent
+        NavigationStack {
+            Group {
+                if model.phase == .connecting && !model.cameraRunning {
+                    modelLoadingScreen
+                } else {
+                    scannerContent
+                }
             }
+            .navigationTitle("Clarity")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button { showingSettings = true } label: {
+                        Label("Settings", systemImage: "gearshape")
+                            .frame(minWidth: 44, minHeight: 44)
+                    }
+                    .foregroundStyle(.primary)
+                    .accessibilityHint("Open alert and scanner settings")
+                }
+            }
+            .sheet(isPresented: $showingSettings) { SettingsView(model: model) }
         }
     }
 
     private var modelLoadingScreen: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            ProgressView().tint(.senseTeal).scaleEffect(1.4)
-                .accessibilityLabel("Preparing scanner")
-            Text("Preparing your scanner")
-                .font(.title2.weight(.semibold))
-                .accessibilityAddTraits(.isHeader)
-            Text(model.detail)
-                .multilineTextAlignment(.center)
-                .accessibilityAddTraits(.updatesFrequently)
-            Text("Camera stays off until the model is ready.")
-                .font(.subheadline)
-                .foregroundStyle(Color.senseMuted)
-            Button("Cancel") { model.stop() }
-                .buttonStyle(.bordered)
-                .tint(.senseTeal)
-                .accessibilityHint("Cancel loading without starting the camera")
-            Spacer()
+        ScrollView {
+            VStack(spacing: 24) {
+                Spacer()
+                ProgressView().tint(.senseTeal).scaleEffect(1.4)
+                    .accessibilityLabel("Preparing scanner")
+                Text("Preparing your scanner")
+                    .font(.title2.weight(.semibold))
+                    .accessibilityAddTraits(.isHeader)
+                Text(model.detail)
+                    .multilineTextAlignment(.center)
+                    .accessibilityAddTraits(.updatesFrequently)
+                Text("Camera stays off until the model is ready.")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.senseMuted)
+                Button("Cancel") { model.stop() }
+                    .buttonStyle(.bordered)
+                    .tint(.primary)
+                    .controlSize(.large)
+                    .accessibilityHint("Cancel loading without starting the camera")
+                Spacer()
+            }
+            .padding(28)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(28)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.senseBackground.ignoresSafeArea())
     }
 
@@ -109,129 +128,116 @@ struct ScannerView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     header
-                    HStack(spacing: 7) {
-                        Circle().fill(model.phase == .scanning ? Color.senseTeal : Color.senseMuted).frame(width: 6, height: 6)
-                        Text(model.phase == .scanning ? "LIVE SCAN" : "CAMERA SCANNER")
-                        Spacer()
-                        Label("Floating window", systemImage: "pip")
-                    }
-                    .font(.caption2.weight(.semibold).monospaced())
-                    .foregroundStyle(Color.senseMuted)
-
                     cameraCard(height: ScannerPresentation.previewHeight(
                         width: max(0, viewport.size.width - 44), availableHeight: viewport.size.height))
-                    HStack(spacing: 12) {
-                        Button {
-                            if model.isBusy { model.stop() } else { model.start() }
-                        } label: {
-                            Label(model.isBusy ? "Stop scanning" : (model.phase == .failed ? "Retry" : "Start scanning"), systemImage: model.isBusy ? "stop.fill" : "viewfinder")
-                                .font(.body.weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.senseTeal)
-                        .foregroundStyle(.black)
-                        .disabled(model.cameraStopping)
-
-                        Button { model.testAlert() } label: {
-                            Image(systemName: "speaker.wave.2")
-                                .font(.title3)
-                                .frame(width: 44, height: 44)
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(.senseTeal)
-                        .accessibilityLabel("Test selected alert modes")
-                    }
+                    scannerStatus
+                    scannerActions
 
                     if model.phase == .failed {
                         Button("Cancel") { model.stop() }
                             .buttonStyle(.bordered)
-                            .tint(.senseTeal)
+                            .tint(.primary)
+                            .controlSize(.large)
                     }
+
+                    Text("Can miss objects. Not a navigation or safety aid. Camera frames stay on this iPhone.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 14) { selectedAlerts }
+                        VStack(alignment: .leading, spacing: 8) { selectedAlerts }
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
                     pictureInPictureCard
 
-                    VStack(alignment: .leading, spacing: 9) {
-                        HStack(alignment: .top, spacing: 11) {
-                            Image(systemName: model.hasCandidate ? "exclamationmark.triangle.fill" : "viewfinder")
-                                .font(.title3)
-                                .foregroundStyle(statusColor)
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text(title).font(.headline).foregroundStyle(statusColor)
-                                Text(model.detail)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.white.opacity(0.76))
-                                    .fixedSize(horizontal: false, vertical: true)
+                    DisclosureGroup("About proximity estimates") {
+                        Text("Prototype for selected objects. The image zone does not establish that a path is clear. Optional LiDAR labels estimate axial depth, not safety. Camera frames are processed on this iPhone and are not uploaded.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        proximityLegend.padding(.top, 8)
+                    }
+                    .frame(minHeight: 44)
+                    .tint(.primary)
+
+                    DisclosureGroup("Advanced") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("\(model.checkedFrames) frames checked · \(model.alertCount) alerts")
+                            Text(model.modelStatus)
+                            if let processing = model.processingMs, let roundTrip = model.roundTripMs {
+                                Text("\(roundTrip) ms total · \(processing) ms inference")
                             }
-                        }
-                        HStack {
-                            Text("\(model.checkedFrames) frames checked")
-                            Spacer()
-                            Text("\(model.alertCount) alerts")
+                            if model.preferences.isLidarEnabled {
+                                TimelineView(.periodic(from: .now, by: 0.1)) { _ in
+                                    Text("Center-surface LiDAR test: \(model.centerSurfaceText)")
+                                }
+                                Text("Raw center pixel. Not object distance or a safety indication.")
+                                Text(model.depthStatus)
+                            }
                         }
                         .font(.caption.monospacedDigit())
-                        .foregroundStyle(Color.senseMuted)
-                        .padding(.top, 6)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 8)
                     }
-                    .padding(17)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.senseSurface, in: RoundedRectangle(cornerRadius: 18))
-
-                    proximityLegend
-
-                    if model.preferences.isLidarEnabled {
-                        VStack(alignment: .leading, spacing: 5) {
-                            TimelineView(.periodic(from: .now, by: 0.1)) { _ in
-                                Text("Center-surface LiDAR test: \(model.centerSurfaceText)")
-                                    .font(.subheadline.monospacedDigit())
-                            }
-                            Text("Raw center pixel. Not object distance or a safety indication.")
-                                .font(.caption)
-                            Text(model.depthStatus).font(.caption)
-                        }
-                        .foregroundStyle(Color.senseMuted)
-                    }
-
-                    HStack(spacing: 14) {
-                        if model.preferences.alertModes.isEmpty {
-                            Label("Visual only", systemImage: "eye")
-                        } else {
-                            ForEach(model.preferences.alertModes) { mode in
-                                Label(mode.title, systemImage: mode.symbol)
-                            }
-                        }
-                    }
-                    .font(.caption)
-                    .foregroundStyle(Color.senseMuted)
-
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("DETECTION MODEL").font(.caption2.weight(.semibold).monospaced())
-                            Text(model.modelStatus).font(.caption)
-                        }
-                        Spacer()
-                        if let processing = model.processingMs, let roundTrip = model.roundTripMs {
-                            VStack(alignment: .trailing, spacing: 4) {
-                                Text("LAST RESPONSE").font(.caption2.weight(.semibold).monospaced())
-                                Text("\(roundTrip) ms total · \(processing) ms inference").font(.caption.monospacedDigit())
-                            }
-                        }
-                    }
-                    .foregroundStyle(Color.senseMuted)
-                    .padding(.vertical, 4)
-
-                    Text("Prototype for selected objects. The image zone does not establish that a path is clear. Optional LiDAR labels estimate axial depth, not safety. Camera frames are processed on this iPhone and are not uploaded.")
-                        .font(.caption)
-                        .foregroundStyle(Color.senseMuted)
-                        .fixedSize(horizontal: false, vertical: true)
+                    .frame(minHeight: 44)
+                    .tint(.primary)
                 }
                 .padding(22)
             }
         }
         .background(Color.senseBackground.ignoresSafeArea())
-        .safeAreaInset(edge: .bottom) { bottomNavigation }
-        .sheet(isPresented: $showingSettings) { SettingsView(model: model) }
+    }
+
+    // Long labels at accessibility sizes must wrap into a readable rectangle
+    // instead of stretching one capsule, so both actions stay reachable.
+    private var scannerActions: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) { startAction; testAlertAction }
+            VStack(spacing: 12) { startAction; testAlertAction }
+        }
+        .buttonBorderShape(.roundedRectangle(radius: 14))
+    }
+
+    private var startAction: some View {
+        Button {
+            if model.isBusy { model.stop() } else { model.start() }
+        } label: {
+            Label(model.isBusy ? "Stop scanning" : (model.phase == .failed ? "Retry" : "Start scanning"), systemImage: model.isBusy ? "stop.fill" : "viewfinder")
+                .font(.body.weight(.semibold))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .padding(.vertical, 6)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(.senseTeal)
+        .foregroundStyle(.black)
+        .disabled(model.cameraStopping)
+    }
+
+    private var testAlertAction: some View {
+        Button { model.testAlert() } label: {
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    Label("Test selected alerts", systemImage: "speaker.wave.2")
+                } else {
+                    Label("Test selected alerts", systemImage: "speaker.wave.2").labelStyle(.iconOnly)
+                }
+            }
+            .font(.body)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : 44, minHeight: 44)
+            .padding(.vertical, 6)
+        }
+        .buttonStyle(.bordered)
+        .tint(.primary)
+        .accessibilityLabel("Test selected alert modes")
     }
 
     private var header: some View {
@@ -239,42 +245,52 @@ struct ScannerView: View {
             Image("ClarityLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 52, height: 52)
+                .frame(width: 36, height: 36)
                 .accessibilityHidden(true)
-            Text("Clarity")
-                .font(.title.weight(.bold))
-                .accessibilityAddTraits(.isHeader)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Object awareness")
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+                Text("Visual, spoken and vibration cues.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
     }
 
-    private var bottomNavigation: some View {
-        HStack(spacing: 12) {
-            Button { showingSettings = false } label: {
-                Label("Home", systemImage: "house.fill")
-                    .frame(maxWidth: .infinity, minHeight: 48)
-                    .padding(.horizontal, 8)
-                    .background(Color.senseTeal, in: RoundedRectangle(cornerRadius: 13))
+    private var selectedAlerts: some View {
+        Group {
+            if model.preferences.alertModes.isEmpty {
+                Label("Visual only", systemImage: "eye")
+            } else {
+                ForEach(model.preferences.alertModes) { mode in
+                    Label(mode.title, systemImage: mode.symbol)
+                }
             }
-            .foregroundStyle(Color.senseBackground)
-            .accessibilityAddTraits(.isSelected)
-            Button { showingSettings = true } label: {
-                Label("Settings", systemImage: "slider.horizontal.3")
-                    .frame(maxWidth: .infinity, minHeight: 48)
-                    .padding(.horizontal, 8)
-            }
-            .foregroundStyle(Color.senseMuted)
-            .accessibilityHint("Open offline detector, depth and alert settings")
         }
-        .font(.subheadline.weight(.semibold))
-        .buttonStyle(.plain)
-        .padding(10)
-        .background(Color.senseNavigation, in: RoundedRectangle(cornerRadius: 24))
-        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.white.opacity(0.1), lineWidth: 1))
-        .padding(.horizontal, 12)
-        .padding(.bottom, 8)
+    }
+
+    private var scannerStatus: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(alignment: .top, spacing: 11) {
+                Image(systemName: model.hasCandidate ? "exclamationmark.triangle.fill" : "viewfinder")
+                    .font(.title3)
+                    .foregroundStyle(statusColor)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(title).font(.headline).foregroundStyle(.primary)
+                    Text(model.detail)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .padding(17)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.senseSurface, in: RoundedRectangle(cornerRadius: 18))
     }
 
     private var proximityLegend: some View {
@@ -314,16 +330,16 @@ struct ScannerView: View {
                     .font(.title3)
                     .foregroundStyle(model.pip.isActive ? Color.senseTeal : Color.senseMuted)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Keep scanning while you use other apps").font(.subheadline.weight(.semibold))
+                    Text("Floating window").font(.subheadline.weight(.semibold))
+                    Text("Background camera access depends on this device. Analysis may pause outside Clarity.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     Text(pipDetail)
                         .font(.caption)
                         .foregroundStyle(Color.senseMuted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            LabeledContent("System reports ready", value: model.pip.isPossible ? "Yes" : "Not yet")
-                .font(.caption)
-                .foregroundStyle(Color.senseMuted)
             Button {
                 model.startPictureInPicture()
             } label: {
@@ -333,7 +349,8 @@ struct ScannerView: View {
                     .padding(.vertical, 10)
             }
             .buttonStyle(.bordered)
-            .tint(.senseTeal)
+            .tint(.primary)
+            .controlSize(.large)
             // Only hard blockers disable this. Readiness is handled by start(), which waits and
             // then explains itself, so a stale isPossible cannot silently hide the feature.
             .disabled(model.pip.unavailableReason != nil || model.pip.isActive)
@@ -360,33 +377,38 @@ struct ScannerView: View {
     }
 
     private func cameraCard(height: CGFloat) -> some View {
-        ZStack {
+        Group {
             if model.cameraRunning {
-                CameraPreview(session: model.camera.session)
-                TimelineView(.periodic(from: .now, by: 0.1)) { _ in
-                    DetectionOverlay(zone: model.zone, detections: model.detections, imageSize: model.imageSize, now: ProcessInfo.processInfo.systemUptime)
+                ZStack {
+                    CameraPreview(session: model.camera.session)
+                    TimelineView(.periodic(from: .now, by: 0.1)) { _ in
+                        DetectionOverlay(zone: model.zone, detections: model.detections, imageSize: model.imageSize, now: ProcessInfo.processInfo.systemUptime)
+                    }
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
                 }
-                .allowsHitTesting(false)
-                .accessibilityHidden(true)
-            }
-            if !model.cameraRunning {
-                LinearGradient(colors: [.senseSurface, .senseSurfaceBottom], startPoint: .topLeading, endPoint: .bottomTrailing)
+                .frame(height: height)
+            } else {
                 VStack(spacing: 14) {
                     Image(systemName: model.phase == .paused ? "pause.circle" : "viewfinder")
                         .font(.system(size: 52, weight: .ultraLight))
-                    Text(model.phase == .connecting ? "Getting ready…" : "See what’s ahead")
+                    Text(model.phase == .connecting ? "Getting ready…" : "Rear camera")
                         .font(.title3.weight(.medium))
                     Text(ScannerPresentation.cameraHint(pipSupported: model.pip.isSupported))
                         .font(.caption)
                         .foregroundStyle(Color.senseMuted)
                     if model.phase == .connecting { ProgressView().tint(.senseTeal) }
                 }
-                .foregroundStyle(Color.senseTeal)
+                .foregroundStyle(.primary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(20)
+                .frame(maxWidth: .infinity, minHeight: height)
+                .background(LinearGradient(colors: [.senseSurface, .senseSurfaceBottom], startPoint: .topLeading, endPoint: .bottomTrailing))
             }
         }
-        .frame(height: height)
         .clipShape(RoundedRectangle(cornerRadius: 24))
-        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.white.opacity(0.1), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color(uiColor: .separator), lineWidth: 1))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Rear camera preview. \(model.detections.count) supported objects detected in the last frame.")
     }
@@ -428,7 +450,8 @@ private struct DetectionOverlay: View {
                     .stroke(color, lineWidth: 2)
                     .frame(width: box.width, height: box.height)
                     .position(x: box.midX, y: box.midY)
-                Text("\(detection.label)  \(Int(detection.confidence * 100))%\n\(band.title)" + (" · " + (detection.proximityDescription(at: now) ?? "proximity unavailable")))
+                Text(detection.isUnknownObject ? detection.overlayLabel(at: now) :
+                    "\(detection.label)  \(Int(detection.confidence * 100))%\n\(band.title)" + (" · " + (detection.proximityDescription(at: now) ?? "proximity unavailable")))
                     .font(.system(size: 10, weight: .semibold, design: .monospaced))
                     .foregroundStyle(.black)
                     .multilineTextAlignment(.center)
@@ -458,6 +481,7 @@ private struct DetectionOverlay: View {
 private struct SettingsView: View {
     @ObservedObject var model: ScanModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var preferences: ScanPreferences
     @State private var saving = false
     @State private var errorMessage: String?
@@ -472,32 +496,23 @@ private struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
-                    Text("Experimental YOLOX-Nano · fine-tuned candidate")
-                    Text(model.modelStatus).font(.caption).foregroundStyle(.secondary)
-                    Text("Testing only. Candidate mAP is worse than baseline. Not safety-certified. All 80 model classes can alert. The 45% default was measured on 300 COCO validation images: it reports about 0.39 of annotated objects at 0.71 precision, versus 0.20 at the old 78.75% default. Raising it returns fewer, more certain detections. iPhone image decoding differs from offline evaluation.").font(.caption).foregroundStyle(.secondary)
-                } header: { Text("Offline detector") } footer: {
-                    Text("Fine-tuned model and runtime are bundled on this iPhone. No server, Wi-Fi, or mobile data is needed. Start scanning to load the model.")
-                }
-
-                Section {
-                    HStack {
-                        Button("Standard preset") { preferences.alertModes = [.sound] }
-                        Spacer()
-                        Button("Spoken preset") { preferences.alertModes = [.speech] }
-                    }
-                    .font(.caption)
-                    .buttonStyle(.borderless)
+                    alertPresets
                     ForEach(AlertMode.allCases) { mode in
-                        Toggle(isOn: Binding(get: { preferences.alertModes.contains(mode) }, set: { enabled in
-                            if enabled { preferences.alertModes.append(mode) }
-                            else { preferences.alertModes.removeAll { $0 == mode } }
-                            preferences.alertModes = AlertMode.allCases.filter { preferences.alertModes.contains($0) }
-                        })) {
-                            Label(mode.title, systemImage: mode.symbol)
-                        }
+                        alertToggle(for: mode)
                     }
                 } header: { Text("Your alerts") } footer: {
                     Text("All options are editable. With every channel off, warnings stay visual. Haptics require supported hardware; test your selected channels before scanning.")
+                }
+
+                Section {
+                    Text("Experimental YOLOX-Nano · fine-tuned candidate")
+                    Text(model.modelStatus).font(.caption).foregroundStyle(.secondary)
+                    DisclosureGroup("About the detector") {
+                        Text("Testing only. Candidate mAP is worse than baseline. Not safety-certified. All 80 model classes can alert. The 45% default was measured on 300 COCO validation images: it reports about 0.39 of annotated objects at 0.71 precision, versus 0.20 at the old 78.75% default. Raising it returns fewer, more certain detections. iPhone image decoding differs from offline evaluation.").font(.caption).foregroundStyle(.secondary)
+                    }
+                    .frame(minHeight: 44)
+                } header: { Text("Offline detector") } footer: {
+                    Text("Fine-tuned model and runtime are bundled on this iPhone. No server, Wi-Fi, or mobile data is needed. Start scanning to load the model.")
                 }
 
                 Section {
@@ -536,6 +551,15 @@ private struct SettingsView: View {
                         Text("Confidence threshold · \(Int(preferences.confidenceThreshold * 100))%")
                         Slider(value: $preferences.confidenceThreshold, in: 0.4...0.95, step: 0.05)
                             .accessibilityLabel("Object classification confidence threshold")
+                        Text("Higher thresholds hide more objects. Start at 45%; lower scores can include more incorrect labels.")
+                            .font(.caption).foregroundStyle(.secondary)
+                        if preferences.confidenceThreshold >= 0.7 {
+                            Label("This high threshold can miss chairs, backpacks and other objects.", systemImage: "exclamationmark.triangle")
+                                .font(.caption).foregroundStyle(.orange)
+                        }
+                        Button("Use recommended 45%") {
+                            preferences.confidenceThreshold = ScanPreferences.candidateConfidenceDefault
+                        }
                     }
                     Stepper("Repeat after \(preferences.cooldownMs / 1000) seconds", value: $preferences.cooldownMs, in: 1000...10000, step: 1000)
                     Text("Confidence is a classification score, not a distance or safety estimate.")
@@ -576,8 +600,60 @@ private struct SettingsView: View {
             }
             .disabled(saving)
         }
-        .preferredColorScheme(.dark)
-        .tint(.senseTeal)
+        .tint(.primary)
+        .controlSize(.large)
+    }
+
+    // A switch beside a long wrapped label overlaps it, so at accessibility sizes
+    // the label moves above its own control.
+    private func alertToggle(for mode: AlertMode) -> some View {
+        let binding = Binding(get: { preferences.alertModes.contains(mode) }, set: { enabled in
+            if enabled { preferences.alertModes.append(mode) }
+            else { preferences.alertModes.removeAll { $0 == mode } }
+            preferences.alertModes = AlertMode.allCases.filter { preferences.alertModes.contains($0) }
+        })
+        return Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label(mode.title, systemImage: mode.symbol)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Toggle(isOn: binding) { EmptyView() }
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.vertical, 4)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(mode.title)
+            } else {
+                Toggle(isOn: binding) {
+                    Label(mode.title, systemImage: mode.symbol)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private var alertPresets: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 12) { presetButtons }
+            } else {
+                HStack(spacing: 16) { presetButtons }
+            }
+        }
+        .buttonStyle(.borderless)
+    }
+
+    private var presetButtons: some View {
+        Group {
+            Button("Standard preset") { preferences.alertModes = [.sound] }
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            Button("Spoken preset") { preferences.alertModes = [.speech] }
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        }
     }
 
     private func distanceStepper(_ title: String, key: WritableKeyPath<ProximitySettings, Double>) -> some View {

@@ -77,20 +77,26 @@ function center(item) {
 }
 
 /** Same confirmation and cooldown rules as the backend, so alerts behave identically. */
-export function createAlertPolicy({ cooldownMs = 3000, maxGapMs = 2500, confirmations = 2 } = {}) {
+export function createAlertPolicy({ cooldownMs = 3000, getCooldownMs, maxGapMs = 2500, confirmations = 2 } = {}) {
   let candidate = null;
   let lastAlertAt = -Infinity;
   return {
     reset() { candidate = null; lastAlertAt = -Infinity; },
     breakStreak() { candidate = null; },
     update(detections, now) {
-      const cooldownRemainingMs = Math.max(0, Math.ceil(cooldownMs - (now - lastAlertAt)));
+      // Read live settings without resetting confirmation or last-alert history.
+      let delay = cooldownMs;
+      try {
+        const selected = getCooldownMs?.();
+        if (Number.isFinite(selected) && selected >= 0) delay = selected;
+      } catch { /* Unavailable settings retain the factory's cooldown. */ }
+      const cooldownRemainingMs = Math.max(0, Math.ceil(delay - (now - lastAlertAt)));
       const result = (reason, triggered = false) => ({
         triggered,
         reason,
         modalities: [],
         message: triggered ? 'Object in camera zone. Check your surroundings.' : null,
-        cooldownRemainingMs: triggered ? cooldownMs : cooldownRemainingMs,
+        cooldownRemainingMs: triggered ? delay : cooldownRemainingMs,
       });
       // Only alert when a detection is both in the walking area and large/low
       // enough in frame to use the same rough "near" cue as the yellow overlay.
@@ -196,13 +202,13 @@ export function createLocalDetector({
   }
   return {
     prepare,
-    async start({ video, signal, onObstacle, onError, onStatus = () => {}, onResult = () => {}, onMetrics = () => {}, onFrame }) {
+    async start({ video, signal, onObstacle, onError, onStatus = () => {}, onResult = () => {}, onMetrics = () => {}, onFrame, getCooldownMs }) {
       signal.throwIfAborted();
       let timer;
       let stopped = false;
       let sequence = 0;
       const canvas = createCanvas();
-      const policy = createAlertPolicy(preferences);
+      const policy = createAlertPolicy({ ...preferences, getCooldownMs });
       const newFrame = createVideoFrameGate();
 
       let model;
@@ -257,7 +263,9 @@ export function createLocalDetector({
             pending?.catch?.(() => {});
           } catch { /* Experimental depth is independent of v1. */ }
         }
-        const alert = policy.update(detections, Date.now());
+        // Cooldown/confirmation use elapsed time, like the camera's final guard,
+        // rather than a wall clock that can jump when the device time changes.
+        const alert = policy.update(detections, now());
         onMetrics({ lastMs: Math.round(elapsed), averageMs: Math.round(elapsed), captureMaxSide: Math.max(size.width, size.height) });
         return {
           frame: { sequence, width: size.width, height: size.height },

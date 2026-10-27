@@ -13,6 +13,7 @@ function runtime() {
     ort: { env: { wasm: {} }, InferenceSession: { create: () => new Promise(resolve => { completeLoad = () => resolve(model); }) } },
   });
   vm.runInContext(readFileSync(new URL('policy.js', root), 'utf8'), context);
+  vm.runInContext(readFileSync(new URL('unknown-objects.js', root), 'utf8'), context);
   vm.runInContext(readFileSync(new URL('detector.js', root), 'utf8'), context);
   return { context, messages, completeLoad: async () => { completeLoad(); await new Promise(setImmediate); }, model };
 }

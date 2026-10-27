@@ -6,6 +6,12 @@ A camera-based obstacle alert **prototype** being prepared for the 2026 Congress
 
 > **October 26 submission sprint:** the original 17 frontend failures are fixed in [PR #20](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/pull/20). Actual browser online/offline model startup and lifecycle checks passed using a virtual camera. The approved Cloudflare judges URL now serves verified source `df0ebaa`; all 66 public assets match. See the [release evidence](docs/CAC_RELEASE_2026-10-26.md) and [remaining submission gates](docs/SUBMISSION_READINESS.md) before recording.
 
+## Download the mobile apps
+
+**[Android APK, iPhone IPA, and installation instructions](DOWNLOADS.md)** · **[GitHub releases](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/releases)**
+
+The Android demo requires a trusted inference backend and uploads camera frames to it. The iPhone IPA requires your own Apple signing before installation. These are experimental builds, not App Store or Play Store releases. The browser demo below is the simplest option without native signing or backend setup.
+
 ## Try the browser app
 
 **[Open the hosted judge demo](https://stepsense-yolox-v2-preview.stepsense-dahacks.workers.dev/)**. It uses browser-local COCO-SSD and supported live-camera PiP. The historical `yolox-v2-preview` hostname is not the current model identity. See [verified deployment and limits](docs/JUDGES.md).

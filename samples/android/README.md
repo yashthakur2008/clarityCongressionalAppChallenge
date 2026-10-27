@@ -6,6 +6,20 @@ The app uses **real backend COCO-SSD inference**. It contains no fake detector, 
 
 **Fastest physical-phone setup:** connect an Android phone over USB with USB debugging enabled, run `adb reverse tcp:3001 tcp:3001`, and enter `http://127.0.0.1:3001` in the app. This reuses the already-running laptop backend without changing its loopback bind or starting another server.
 
+## Download and sideload the demo
+
+See the repository's [download instructions](../../DOWNLOADS.md) for the GitHub asset named **Clarity-Android-demo.apk**. This is a **debug-signed, debuggable experimental demo**, not a production-signed or Play Store release. It requires Android 8.0 / API 26 or newer and a rear camera. It has no native ABI restriction because it contains no native libraries.
+
+Download the APK on the phone and open it, then allow installation from that browser or file manager when Android asks. Alternatively, with USB debugging enabled:
+
+```sh
+adb install -r Clarity-Android-demo.apk
+```
+
+An existing `dev.myeyes.sample` installation signed with another key cannot be updated with this APK. Uninstalling it first removes its app settings. Future production signing also requires an explicit migration or uninstall. Do not treat the Android Debug certificate as a production publisher identity.
+
+**Installation is not a complete setup:** the Android app uploads rear-camera JPEGs to a separately running Clarity backend for inference. It does not perform offline inference and does not have native iOS feature parity. Configure a trusted HTTPS backend, or use the controlled USB/local HTTP setup below. The debug build permits cleartext HTTP, so do not send camera frames across an untrusted network. Camera and notification permissions are requested in the app. Full-screen alerts remain restricted by Android and user settings.
+
 ## Open and run
 
 1. In Android Studio, choose **Open** and select this `samples/android` folder. Allow Gradle sync and install Android SDK Platform 36 if prompted.
@@ -70,6 +84,18 @@ There is no floating preview in this core sample. It does not need overlay permi
 
 Notification permission is optional at the OS level. If it is denied, Android may omit the notification from the drawer even though its active-service indicator remains. The app explains this and keeps its own Stop control. [Android's notification-permission documentation](https://developer.android.com/develop/ui/views/notifications/notification-permission) describes that behavior. Device volume, Do Not Disturb, haptic preferences, and hardware affect alerts; the Test button makes those checks explicit. The app does not record audio or attempt to take audio focus from Reels.
 
+## Breaking through the foreground app
+
+When the backend confirms a near object, the app tries to interrupt whatever the user is doing. Android permits this more directly than iOS does.
+
+- `ProximityAlerts` creates a second notification channel, **Proximity alerts**, at `NotificationManager.IMPORTANCE_HIGH`, separate from the low-importance scanning channel. Its sound uses `AudioAttributes.USAGE_ALARM`.
+- The channel calls `setBypassDnd(true)`. That request **only takes effect if the user grants this app a Do Not Disturb override** in system settings. Without the override the channel still works and simply respects DND. The call is wrapped so a refusal degrades instead of crashing.
+- The near-object notification uses `setFullScreenIntent(pendingIntent, true)` with `Notification.CATEGORY_ALARM` and `PRIORITY_HIGH`, which can launch `AlertActivity` over the foreground app. `USE_FULL_SCREEN_INTENT` is declared in the manifest.
+- On **Android 14+ (API 34+) `USE_FULL_SCREEN_INTENT` is restricted** and is not granted to a general-purpose app by default. The code asks `NotificationManager.canUseFullScreenIntent()` and, when it returns false, posts a heads-up notification only and plays the local tone/vibration instead. **The full-screen takeover is not guaranteed on API 34+.** See [the time-sensitive notification guidance](https://developer.android.com/training/notify-user/time-sensitive).
+- `AlertActivity` fills the screen with **Watch out**, the highest-confidence detected label, the alert detail, and a **Dismiss** button. It calls `setShowWhenLocked(true)` and `setTurnScreenOn(true)` (with pre-27 window-flag fallbacks, since `minSdk` is 26), vibrates a short sharp `0/160/70/160` waveform with `VibrationAttributes.USAGE_ALARM` on API 33+, and plays the default alarm tone through `AudioAttributes.USAGE_ALARM` at full player volume. The alarm stream stays audible when the ringer is silenced, subject to the device's alarm volume. It auto-dismisses after 6 seconds and stops all feedback on pause or destroy.
+- Wording (**Watch out**, **Dismiss**) is kept in step with the iOS app so both products tell the same story. Android holds the canonical strings in `ProximityAlerts`.
+- Notification posting is still gated on `POST_NOTIFICATIONS`. If the user denies notifications, `raise()` returns false and the local tone/vibration path carries the alert.
+
 ## Physical-phone acceptance pass
 
 These checks remain to be run on a real phone:
@@ -79,14 +105,33 @@ These checks remain to be run on a real phone:
 3. Open Instagram Reels while retaining camera direction toward that scene. Check that the scanning notification remains, the backend continues receiving requests, and alerts occur. Measure full capture/request/alert latency; do not infer it from the older backend-only measurements.
 4. Stop from the notification during an upload. Confirm camera indicators and network activity cease and no late alert plays. Repeat quick Stop/Start, rotation, app switching, task removal, and a second app requesting the camera.
 5. Disconnect and reconnect the backend; verify unavailable state and recovery. Try sound-only, vibration-only, and visual-only (both off), including the device's actual volume and haptic settings.
+6. With Instagram Reels in the foreground, trigger a near object and confirm the full-screen **Watch out** screen appears over it, shows the detected label, vibrates, sounds on the alarm stream with the ringer silenced, and auto-dismisses. Repeat with the device locked. On an Android 14+ device, check `canUseFullScreenIntent()`: if it is false, confirm the heads-up fallback plus local tone/vibration still alerts the user. Also test with and without a Do Not Disturb override granted.
 
 General object detection does not identify every walking hazard. This backend has no dedicated curb, stair, pothole, cone, or construction-barrier class. Image-space boxes do not establish physical distance, ground contact, or a clear path. Demo this as an experimental awareness prototype in a controlled scene.
 
 ## Verification performed here
 
-The host has no Java runtime, Android SDK, Android Studio, `adb`, or connected Android device. Running `./gradlew :app:assembleDebug` stops with **Unable to locate a Java Runtime** before compilation. No JDK, SDK, emulator, or Android Studio was installed. This is source implementation and static review, not a successful Android compilation or verified background-camera demonstration.
+On 2026-10-26, this project was compiled using an isolated **Corretto JDK 17.0.21**, Android SDK Platform **36**, Gradle **8.13**, and Android Gradle Plugin **8.13.2**. The actual compiler exposed two invalid subclass multi-catches in `ProximityAlerts`, which were corrected. Android lint exposed an API-27-only theme attribute in the API-26 base resources, which was removed because its false value was redundant.
 
-Static checks passed: all three Android XML files parse, the Gradle shell wrapper passes `sh -n`, and the wrapper JAR contains `GradleWrapperMain` with the expected official checksum. An independent source review found no additional compile/API-signature issue; an Android build is still required.
+Verification commands:
+
+```sh
+./gradlew --no-daemon :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease
+node tests/alerts.test.mjs
+apksigner verify --verbose --print-certs app/build/outputs/apk/debug/app-debug.apk
+aapt dump badging app/build/outputs/apk/debug/app-debug.apk
+adb devices -l
+```
+
+The debug APK is signed with an **Android Debug** RSA-2048 certificate and verifies with APK signature scheme v2. Manifest inspection confirms package `dev.myeyes.sample`, version `0.1.0` / code `1`, minimum SDK 26, target SDK 36, camera foreground-service permissions, and only the launcher activity exported. Debug allows cleartext traffic. Release disables it.
+
+`assembleRelease` produces `app/build/outputs/apk/release/app-release-unsigned.apk`. **That artifact is unsigned and cannot be installed as-is.** A durable, privately managed release signing key is required before it can become a production download. No signing secrets are committed, and the runtime dependency reports for debug and release contain no third-party libraries. A source/build-config scan for common credential patterns found none, and APK ZIP inspection found only DEX, manifest, resources, and Android build metadata, not keys or configuration secrets. These checks are not a comprehensive security audit.
+
+Both assemble tasks and both lint tasks pass. Each lint report contains **0 errors and 13 warnings**, including platform ExifInterface, backup rules, localization, and draw allocations. These warnings were not suppressed.
+
+The 53 source-contract checks pass, including XML parsing. They are static contracts, not runtime tests. `adb devices -l` returned no devices. **Installation, camera capture, backend communication, background scanning, real alert latency, full-screen takeover, sound, and vibration remain unverified on hardware.** Use the physical-phone acceptance checklist above before relying on the demo. This is not a validated safety or navigation aid.
+
+The wrapper distribution checksum is pinned and the JAR retains its official checksum.
 
 The wrapper JAR was downloaded from Gradle's official `v8.13.0` source tag and matches the [published checksum](https://gradle.org/release-checksums/):
 
