@@ -55,6 +55,24 @@ enum PiPDiagnostics { static func log(_ event: String, _ detail: String) {}; sta
         precondition(service.achievedLevel == .unauthorized && !service.isTimeSensitiveAuthorized)
         now += 3; service.postNearAlert(label: "chair"); service.postTestAlert(); await drain()
         precondition(center.requests.count == 3)
+        service.postUnknownAlert(sound: true)
+        precondition(center.requests.count == 3, "unknown notifications require permission")
+        center.settings.authorizationStatus = .authorized
+        center.settings.timeSensitiveSetting = .disabled
+        service.refreshAuthorization(); await drain()
+        service.postUnknownAlert(sound: false)
+        precondition(center.requests.count == 4)
+        let unknown = center.requests.last!
+        precondition(unknown.content.title == "Possible unknown object")
+        precondition(unknown.content.body == "Possible unknown object in camera zone. Check your surroundings.")
+        precondition(!unknown.content.title.lowercased().contains("near"))
+        precondition(unknown.content.sound == nil && unknown.content.interruptionLevel == .active)
+        precondition(!unknown.identifier.contains("near"))
+        service.postUnknownAlert(sound: true)
+        precondition(center.requests.count == 4, "unknown notifications must throttle")
+        now += 3
+        service.postUnknownAlert(sound: true)
+        precondition(center.requests.count == 5 && center.requests.last!.content.sound != nil)
         print("PASS notification service: delegate, permission changes, throttle, test channel")
     }
 }

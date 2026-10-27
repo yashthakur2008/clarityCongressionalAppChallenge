@@ -315,8 +315,14 @@ final class ScanModel: ObservableObject {
                     let matchingFrame = result.frame.sequence == frameSequence
                         && result.frame.width == Int(frame.size.width) && result.frame.height == Int(frame.size.height)
                     var depthRejections: [String: Int] = [:]
-                    detections = result.detections.map { detection in
-                        detection.addingProximity(from: frame.depth, lidarCapable: self.lidarHardwareAvailable,
+                    detections = result.detections.filter {
+                        !$0.isUnknownObject || (matchingFrame && $0.isFreshAppearance(
+                            capturedAt: frame.capturedAt, now: ProcessInfo.processInfo.systemUptime))
+                    }.map { detection in
+                        // JS has already confirmed appearance persistence. Never sample its floor ROI
+                        // or infer visual proximity from an unclassified contrast region.
+                        guard !detection.isUnknownObject else { return detection }
+                        return detection.addingProximity(from: frame.depth, lidarCapable: self.lidarHardwareAvailable,
                                               enabled: self.preferences.isLidarEnabled, matchingFrame: matchingFrame,
                                               capturedAt: frame.capturedAt, now: ProcessInfo.processInfo.systemUptime) { reason in
                             depthRejections[reason, default: 0] += 1
@@ -339,9 +345,12 @@ final class ScanModel: ObservableObject {
                     case "triggered": detail = result.alert.message ?? "Object in camera zone. Check your surroundings."
                     case "confirming": detail = "Object in image zone. Confirming another frame…"
                     case "cooldown": detail = "Object remains in zone. Alert cooldown active."
-                    default: detail = "No supported object in the image zone in the last frame."
+                    default:
+                        detail = detections.contains(where: { $0.isUnknownObject && $0.inZone })
+                            ? "Possible unknown object in camera zone. Appearance contrast · unclassified."
+                            : "No supported object in the image zone in the last frame."
                     }
-                    updateProximityFeedback(genericAlert: result.alert)
+                    updateProximityFeedback(genericAlert: result.alert, capturedAt: frame.capturedAt)
                 }
                 refreshPiPOverlay()
             } catch {
@@ -421,8 +430,16 @@ final class ScanModel: ObservableObject {
         }
     }
 
-    private func updateProximityFeedback(genericAlert: FrameAnalysis.Alert) {
+    private func updateProximityFeedback(genericAlert: FrameAnalysis.Alert, capturedAt: TimeInterval) {
         let now = ProcessInfo.processInfo.systemUptime
+        // Unknown alerts must still be fresh at delivery, including native bridge overhead.
+        if genericAlert.message == Detection.unknownObjectMessage,
+           !detections.contains(where: { $0.isUnknownObject && $0.inZone && $0.isFreshAppearance(capturedAt: capturedAt, now: now) }) {
+            alerts.stop()
+            alertReason = "stale"
+            detail = "Appearance observation expired. Checking a fresh frame."
+            return
+        }
         switch ProximityAlertRoute.select(detections, now: now, genericTriggered: genericAlert.triggered) {
         case .proximity(let target):
             alerts.updateProximity(target: target, modes: preferences.alertModes)
@@ -465,12 +482,13 @@ final class ScanModel: ObservableObject {
 
     private func expireDepth(sequence: Int, capturedAt: TimeInterval, generation current: UUID) {
         depthExpirationTask?.cancel()
-        guard detections.contains(where: { $0.proximityExpiresAt != nil || $0.depthExpiresAt != nil }) else { return }
+        guard detections.contains(where: { $0.isUnknownObject || $0.proximityExpiresAt != nil || $0.depthExpiresAt != nil }) else { return }
         let remaining = max(0, DepthSnapshot.maximumAge - (ProcessInfo.processInfo.systemUptime - capturedAt))
         depthExpirationTask = Task { [weak self] in
             do { try await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000)) } catch { return }
             guard let self, generation == current, displayedSequence == sequence, !Task.isCancelled else { return }
-            detections = detections.map { detection in
+            let hadUnknown = detections.contains(where: \.isUnknownObject)
+            detections = detections.filter { !$0.isUnknownObject }.map { detection in
                 var expired = detection
                 expired.depthMeters = nil
                 expired.depthExpiresAt = nil
@@ -482,7 +500,12 @@ final class ScanModel: ObservableObject {
                 expired.proximityConfirmed = nil
                 return expired
             }
-            alerts.stopProximity()
+            if hadUnknown {
+                alerts.stop()
+                detail = "Appearance observation expired. Checking a fresh frame."
+            } else {
+                alerts.stopProximity()
+            }
             proximityPolicy.reset()
             if alertReason == "proximity" || alertReason == "outside-range" {
                 alertReason = "depth-unavailable"

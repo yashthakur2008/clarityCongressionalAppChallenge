@@ -126,6 +126,26 @@ final class CriticalAlerts: NSObject, UNUserNotificationCenterDelegate {
         addNotificationRequest(center: center, content: content, label: label)
     }
 
+    /// Preconfirmed appearance contrast, not a near-object or distance warning.
+    /// Synchronous posting avoids a deferred task delivering after Stop or stale results.
+    func postUnknownAlert(sound: Bool) {
+        guard let center, isAuthorized else { return }
+        let now = clock()
+        guard now.isFinite else { return }
+        let key = "appearance.unknown"
+        if let previous = lastPosted[key], now >= previous, now - previous < Self.throttleInterval { return }
+        lastPosted[key] = now
+        let content = UNMutableNotificationContent()
+        content.title = "Possible unknown object"
+        content.body = "Possible unknown object in camera zone. Check your surroundings."
+        content.interruptionLevel = isTimeSensitiveAuthorized ? .timeSensitive : .active
+        if sound { content.sound = .default }
+        let request = UNNotificationRequest(identifier: "appearance.unknown.\(UUID().uuidString)", content: content, trigger: nil)
+        center.add(request) { error in
+            if let error { PiPDiagnostics.error("notify.unknown.failure", error) }
+        }
+    }
+
     func postTestAlert() {
         guard let center else { return }
         Task { @MainActor in

@@ -194,7 +194,7 @@ final class PiPContentView: UIView {
             overlayLayer.addSublayer(shape)
             let label = CATextLayer()
             let depthLabel = detection.proximityDescription(at: now) ?? "proximity unavailable"
-            label.string = "\(band.title)\n\(depthLabel)"
+            label.string = detection.isUnknownObject ? detection.overlayLabel(at: now, compact: true) : "\(band.title)\n\(depthLabel)"
             label.fontSize = 9
             label.contentsScale = window?.screen.scale ?? 2
             label.foregroundColor = UIColor.black.cgColor

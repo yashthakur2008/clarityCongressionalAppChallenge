@@ -146,6 +146,9 @@ final class AlertPlayer: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDel
     func deliver(_ modes: [AlertMode], message: String) {
         stopProximity()
         stopGenericOutputs()
+        if !modes.isEmpty, message == Detection.unknownObjectMessage {
+            criticalAlerts.postUnknownAlert(sound: modes.contains(.sound))
+        }
         if modes.contains(.sound) || modes.contains(.speech) {
             do {
                 try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])

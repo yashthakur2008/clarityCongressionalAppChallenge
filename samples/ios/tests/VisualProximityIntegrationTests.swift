@@ -12,6 +12,36 @@ import Foundation
             return detection.addingProximity(from: snapshot, lidarCapable: lidar,
                 enabled: enabled, matchingFrame: matched, capturedAt: time, now: time + 0.1)
         }
+        var unknown = Detection(label: "Possible unknown object", confidence: 0,
+            bbox: detection.bbox, anchor: detection.anchor, inZone: true)
+        precondition(unknown.isUnknownObject && !detection.isUnknownObject)
+        precondition(unknown.isFreshAppearance(capturedAt: 100, now: 100.749))
+        for now in [99.9, 100.75, 102.0, Double.nan, Double.infinity] {
+            precondition(!unknown.isFreshAppearance(capturedAt: 100, now: now))
+        }
+        let nearMiss = Detection(label: "possible unknown object", confidence: 0,
+            bbox: detection.bbox, anchor: detection.anchor, inZone: true)
+        precondition(!nearMiss.isUnknownObject, "sentinel matching must be exact")
+        for lidar in [false, true] {
+            unknown.depthMeters = 0.5
+            unknown.depthRequested = true
+            unknown.depthExpiresAt = 100.75
+            unknown.enrichProximity(lidarCapable: lidar, capturedAt: 100)
+            precondition(unknown.depthMeters == nil && unknown.depthRequested != true)
+            precondition(unknown.depthExpiresAt == nil && unknown.proximitySource == nil)
+            precondition(unknown.visualProximityArea == nil && unknown.proximityExpiresAt == nil)
+            precondition(unknown.freshProximitySource(at: 100.1) == nil)
+            precondition(unknown.freshProximityDepth(at: 100.1) == nil)
+            precondition(unknown.freshProximityBand(at: 100.1) == .unknown)
+            precondition(unknown.depthLabel(at: 100.1) == nil)
+            precondition(unknown.overlayLabel(at: 100.1) == "Possible unknown object\nAppearance contrast · unclassified")
+            precondition(unknown.overlayLabel(at: 100.1, compact: true) == unknown.overlayLabel(at: 100.1))
+        }
+        precondition(detection.overlayLabel(at: 100.1).contains("99%"))
+        var unknownPolicy = ProximityPolicy()
+        let unknownOutput = unknownPolicy.update([unknown], settings: .init(), now: 100.1)
+        precondition(ProximityAlertRoute.select(unknownOutput, now: 100.1, genericTriggered: true) == .detectionOnly(shouldAlert: true), "JS preconfirmation must not require another native frame")
+        precondition(ProximityAlertRoute.select(unknownOutput, now: 100.1, genericTriggered: false) == .detectionOnly(shouldAlert: false))
         var policy = ProximityPolicy()
         let first = policy.update([enriched(false)], settings: .init(), now: 100.1)
         precondition(first[0].freshProximityBand(at: 100.1) == .near)

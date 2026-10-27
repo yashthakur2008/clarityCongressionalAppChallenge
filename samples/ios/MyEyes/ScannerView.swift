@@ -450,7 +450,8 @@ private struct DetectionOverlay: View {
                     .stroke(color, lineWidth: 2)
                     .frame(width: box.width, height: box.height)
                     .position(x: box.midX, y: box.midY)
-                Text("\(detection.label)  \(Int(detection.confidence * 100))%\n\(band.title)" + (" · " + (detection.proximityDescription(at: now) ?? "proximity unavailable")))
+                Text(detection.isUnknownObject ? detection.overlayLabel(at: now) :
+                    "\(detection.label)  \(Int(detection.confidence * 100))%\n\(band.title)" + (" · " + (detection.proximityDescription(at: now) ?? "proximity unavailable")))
                     .font(.system(size: 10, weight: .semibold, design: .monospaced))
                     .foregroundStyle(.black)
                     .multilineTextAlignment(.center)
