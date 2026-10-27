@@ -1,59 +1,79 @@
 # Clarity Congressional submission readiness
 
-**Updated:** October 24, 2026. Baseline source: `8f48b3c`. Non-frontend preparation patch: `docs/cac-submission-readiness` (not merged or deployed).
-**Deadline:** Monday, October 26, 2026 at **9:00 AM PDT / 12:00 PM EDT / 16:00 UTC**.
-**Team target:** Submit Sunday evening, leaving Monday for contingency only.
+**Updated:** October 26, 2026, 07:05 UTC (Monday October 26, 12:05 AM PDT).
+**Submission candidate:** [PR #20](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/pull/20), branch `fix/submission-sprint`. Incorporates PRs #18 and #19. Source `df0ebaa` is deployed on the approved Cloudflare judges URL; PR remains open. See [release identity and verification](CAC_RELEASE_2026-10-26.md).
+**Official deadline:** Monday October 26, **9:00 AM PDT / 12:00 PM EDT / 16:00 UTC**.
+**Entry:** Yash is the sole entrant (user-confirmed October 26); Cloudflare is the approved hosting target. Prior contributors remain credited, not listed as entrants.
+**Requested three-hour target:** approximately **1:34 AM PDT Monday**. Do not wait until the official deadline.
 
 ## Progress
 
-`███░░░░░░░░░` **3 / 12 evidence gates = 25% of the submission checklist verified or prepared in this patch. NOT READY.**
+`█████░░░░░░░` **5 / 12 evidence gates = 42% verified or prepared. Tested browser release is LIVE; submission is NOT yet complete.**
 
-The third gate is the corrected CAC documentation in this reviewable patch. It still needs student review and merge. This does not make main, the deployment or the application ready.
-
-This is an evidence-completeness measure, **not the percentage of the app implemented**, a probability of acceptance, or the fraction of code tests passing. Unknown/manual items count as incomplete. These are our submission/release gates, not twelve official contest rules. Engineering checks support the functionality claim. No numerical score overrides missing eligibility, public video or actual submission confirmation.
+This measures submission evidence, not coding completion or likelihood of winning. Gate 5 is prepared for student review. Gates 6 and 7 have deployed-source parity and actual green CI evidence at `df0ebaa`; subsequent runtime revisions require fresh verification. Missing eligibility, video and receipt cannot be replaced by more code tests.
 
 | Gate | Status | Evidence or next action | Owner |
 | --- | --- | --- | --- |
-| 1. Current official rules and exact deadline verified | VERIFIED | [2026 rulebook](https://www.congressionalappchallenge.us/wp-content/uploads/2026/05/2026-CAC-Rules.pdf) read on October 24; district-specific instructions still need confirmation in gate 3 | Agent |
-| 2. Source available to judges | VERIFIED | Anonymous GitHub fetch succeeded for this public repo; clean isolated clone at 8f48b3c | Agent |
-| 3. Eligibility, registration, entrant roster and inherited-work rights | UNKNOWN | #2. Confirm participating district, school/residence, <=4 students, half district-eligible, one app/district, creation date and actual authors privately | Yash + partner |
-| 4. Full AI disclosure and significant student contributions | UNKNOWN | #3. Generic AI attribution is not a completed disclosure. Students must validate their actual contributions and understanding | Yash + partner |
-| 5. Current CAC-facing docs and application checklist | PREPARED IN PATCH | #1. [Checklist](demo.md), [student drafting prompts](SUBMISSION_DRAFT.md), README and judge outline corrected against official rules; local links verified. Student review/merge pending | Agent |
-| 6. One final release identity and matching public deployment | INCOMPLETE | #6. Two demo URLs exist. Five sampled Vercel JS files match main, index.html differs. Final partner release not pinned | Yash + partner |
-| 7. Release regression checks and automated CI | FAILING | #8, #9, #14, #15. Frontend 17 failures; native assertion repaired (95 pass, 0 fail, 1 compiled-bundle check skipped in serialized verification) | Agent + frontend partner |
-| 8. Accurate licenses, model provenance and privacy/claim boundaries | INCOMPLETE | #9 native attribution/default docs corrected in patch. Broader rights/privacy review and #13/#16 optional API/model claim review remain incomplete | Agent + students |
-| 9. Actual demo-device functionality and accessible core flow | UNKNOWN | #7, #10. No current final-build phone acceptance evidence. Scope native/LiDAR/PiP claims to what is actually demonstrated | Yash + frontend partner |
-| 10. Public 1–3 minute video with all required content | UNKNOWN | #4. Verify public YouTube/Vimeo playback, <=180s and actual functionality | Yash + partner |
-| 11. Complete student-reviewed application answers | UNKNOWN | #5. Actual form fields and district instructions need review | Yash + partner |
-| 12. Submission sent and confirmation retained | UNKNOWN | #5. Human owner submits and retains receipt privately. No submission made by this audit | Yash |
+| 1. Official rules and exact deadline | VERIFIED | [2026 rulebook](https://www.congressionalappchallenge.us/wp-content/uploads/2026/05/2026-CAC-Rules.pdf), reviewed October 24 | Agent |
+| 2. Public source available | VERIFIED | Public repository and PR #20 accessible; source commits published | Agent |
+| 3. Eligibility, registration, entrant roster and inherited-work rights | UNKNOWN | #2: solo roster confirmed; verify participating district, your school/residence eligibility, one app/district, creation date, your contributions and inherited-work rights privately | Yash |
+| 4. Full AI disclosure and significant student contributions | UNKNOWN | #3: complete the [disclosure worksheet](SUBMISSION_DRAFT.md); include this sprint's code/test assistance | Yash |
+| 5. CAC-facing documentation and application checklist | PREPARED IN PATCH | [Checklist](demo.md), drafting prompts, judge guide and this handoff prepared; student approval still required | Agent + Yash |
+| 6. Final release identity and matching deployment | VERIFIED | Cloudflare version `97cde6a2-3249-40b2-bfff-19ee700a9ce3`, source `df0ebaa`; all 66 public assets match; [release record](CAC_RELEASE_2026-10-26.md) | Agent |
+| 7. Regression checks and automated CI | VERIFIED FOR DEPLOYED SOURCE | Backend 28, frontend 255 and Worker 39 pass in actual Node24 Actions at `df0ebaa`; native build green. Local full native run with actual built artifact: 96/96, zero skips | Agent |
+| 8. Licenses, provenance, privacy and claim boundaries | INCOMPLETE | Native attribution corrected, backend audit zero. Inherited-code/assets rights and actual student disclosures still unverified | Agent + Yash |
+| 9. Actual demo-device functionality and accessibility | PARTIAL | Public Cloudflare HTTPS site: real Chrome online/offline inference and lifecycle checks passed using virtual camera at 390px. Physical phone, mobile Safari, actual scenes and assistive-technology acceptance not performed | Yash |
+| 10. Public 1–3-minute video | UNKNOWN | #4: public YouTube/Vimeo, all required content, <=180 seconds, logged-out playback | Yash |
+| 11. Complete student-reviewed application | UNKNOWN | #5: actual form fields, district instructions, truthful answers and disclosures | Yash |
+| 12. Submitted application and receipt | UNKNOWN | #5: human owner submits and saves confirmation privately | Yash |
 
-After the deadline, each teammate must individually complete the exit questionnaire when received. This follow-up does not count as a pre-submission blocker.
+Yash, as the sole entrant, must also complete the post-deadline exit questionnaire when received.
 
-## Fresh automated verification
+## What was fixed in this sprint
 
-| Suite | Runtime | Passed | Failed | Skipped | Scope |
-| --- | --- | ---: | ---: | ---: | --- |
-| Backend | Node 24.16.0 | 28 | 0 | 0 | Existing tests, not hosted model acceptance |
-| Worker | Node 24.16.0 | 39 | 0 | 0 | Existing tests; targeted stub-provider probes expose uncovered defects |
-| Frontend | Node 24.16.0 | 229 | 17 | 0 | Unit/integration harnesses, not a physical camera run |
-| Native (serialized) | Node 26.7.0 | 95 | 0 | 1 | Swift/source/bundle checks; compiled-app metadata skipped because CLARITY_BUILT_APP unset |
+The reproduced baseline had **229 frontend passes / 17 failures**. The integrated candidate has **254 passes / 0 failures**, including additional regression cases. A subsequent independent review found one cache-freshness issue, reproduced it with a new failing test, and fixed it in `b732875` (8/8 service-worker tests). The complete frontend rerun after that correction passes **255/255**, with zero skips.
 
-Commands: `node --test frontend/*.test.js`, `node --test --test-concurrency=1 samples/ios/tests/*.test.mjs`, backend syntax/tests and Worker tests. Root `npm run check` passes on Node 24; root `npm test` fails on the 17 existing frontend regressions. The workflow also runs Worker tests after aggregate failure so they are not silently omitted.
+- Model loading now precedes camera permission; cancellation, timeout, retry, hidden-page and stale-result guards prevent late activation.
+- The scanner no longer falls back to a misleading model-less preview when the module fails.
+- Fixed an actual `mountObjectAlerts` ReferenceError, live preference reads, invalid silent-plus-vibrate notification options, and overlay labels.
+- Preserved the partner's intentional animated header. Updated obsolete PNG-layout assertions rather than reverting the design.
+- Bumped the service-worker cache. Offline query-versioned assets prefer their freshest exact cached response, then fall back to the installed asset.
+- Integrated the already reviewed native provenance/default assertion, CI, documentation and dependency patches. Production audit reports zero known advisories, not proof of universal security.
 
-Baseline native result was 94 pass / 1 fail / 1 skip. The obsolete .7875 assertion was repaired to check the actual shared .45 default in both the property and initializer; changing any of those contracts in in-memory mutation checks makes the new checks fail. No production threshold/model changed. An initial parallel post-patch run hit two timeouts in unchanged Swift tests; the full serialized rerun passed 95 with 1 skipped. No timeout values were increased. The skip requires a compiled app via `CLARITY_BUILT_APP` and is not counted as passed.
+## Actual acceptance evidence
 
-Markdown relative-file links, syntax checks, workflow YAML/contract checks and `git diff --check` pass. Node 24 clean dependency installation timed out locally, but the actual [GitHub regression run at `6d7dbfb`](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/actions/runs/40141499226) successfully installed locked dependencies and passed syntax checks. Backend 28/28 and Worker 39/39 passed there; frontend retained the same 17 failures, so the regression job correctly failed. The [native CI run at `6d7dbfb`](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/actions/runs/40141499230) passed 95 tests with 1 skipped, built the unsigned iOS Simulator app and uploaded its artifact. That is not an installable iPhone app or physical-device evidence. These run links establish that revision only; check [PR #18](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/pull/18) for subsequent check status. These checks do not establish device acceptance, model quality or a working final deployment.
+**Latest public release:** all 66 assets matched, and the online/offline/cancel/retry/navigation browser checks below were repeated against the deployed HTTPS site. [Exact source, Cloudflare version, final CI and per-check results](CAC_RELEASE_2026-10-26.md). The older local/CI rows below retain their original revision scope; the latest native artifact-backed run passes 96/96 with no skips.
 
-## Work order for the remaining time
+| Check | Observed result | Boundary / limitation |
+| --- | --- | --- |
+| Clean locked install, root syntax, backend tests | PASS, 28/28 | Node 26.7 locally; Node 24 in actual CI |
+| Frontend aggregate suite | PASS, 254/254 at `c9fc0ad` | Automated unit/integration tests, not alone a phone acceptance claim |
+| Worker suite | PASS, 39/39 | Optional hosted AI behavior not exercised live |
+| Native serialized suite | 95 pass, 0 fail, 1 skip | Compiled-bundle metadata requires `CLARITY_BUILT_APP` |
+| Native actual Actions build | PASS, unsigned iOS Simulator artifact | Not an installable signed iPhone release or physical-device test |
+| Chrome onboarding | PASS | Actual DOM controls, isolated profile, camera off before Start |
+| Local model + camera lifecycle | PASS | Actual bundled TFJS/COCO-SSD in WASM, virtual browser camera, frames advance, Stop ends all tracks |
+| Offline reload and restart | PASS | Real service worker, cached runtime/model, query-versioned logo, scanner remounts and starts offline |
+| Loading cancellation and late model completion | PASS | Real model download held then released; Cancel keeps camera off after completion |
+| Download failure and Retry | PASS | Actual runtime request aborted; Retry/Cancel shown, no camera; restored network and Retry succeeds |
+| Settings navigation | PASS | Stops the real browser media tracks after restart |
+| Privacy/error/layout checks | PASS | Zero POST/frame uploads or uncaught page errors on happy/offline path; no horizontal overflow at 390px |
 
-1. **Now, parallel:** frontend partner owns #14 startup/cancellation, then #15 remaining regressions and #7 accessibility. Agent's first patch prepares #1 docs/readiness, #8 CI and #9 native attribution/stale assertion, without changing frontend/. Review and merge separately from the partner's frontend work.
-2. **Today:** Yash and partner resolve #2 eligibility/rights and #3 actual contribution/AI disclosure. These cannot be truthfully inferred or certified by an agent.
-3. **Sunday morning:** integrate partner's tested commit, pin #6 canonical release, finish #10 stationary device rehearsal, and address only observed blocking bugs. Keep optional Worker API and unvalidated native features out of the primary flow if not needed.
-4. **Sunday afternoon/evening:** record #4 public 1–3 minute video, review #5 answers and required credits, check links logged out, submit and retain confirmation.
-5. **Defer:** #11/#12 optional Worker defects and #13 new model evaluation/training unless the chosen demonstration depends on them. #16 backend dependency review matters before exposing that API, not before a browser-local demo.
+The first browser harness waited for transient startup wording after the app had already reached running inference. Replacing that harness observation with stable running-state evidence resolved its timeout; no application change was needed for that failure.
 
-## Boundaries and current work state
+Actual CI at `c9fc0ad`:
+- [Whole-app regression](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/actions/runs/40275406107)
+- [Backend safety](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/actions/runs/40275406174)
+- [Native tests and Simulator build](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/actions/runs/40275406222)
 
-Sixteen improvement issues plus [readiness tracker #17](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/issues/17) exist with evidence, acceptance criteria, priority and owner boundaries. The first patch corrects current contest documents, adds a student-review disclosure worksheet, prepares Node 24 regression CI, and corrects native model attribution and the obsolete threshold assertion. The production confidence threshold and model are unchanged.
+These links establish that revision only. Check PR #20 for final-head status. No actual camera footage, physical scene accuracy, native LiDAR/PiP or mobile Safari reliability is certified by these checks.
 
-The patch is not merged or deployed. Frontend source is unchanged. No signing changes, device captures or submission actions have occurred. Student review of agent-assisted changes and the actual application is still required. The app has substantial existing implementation; the score measures submission evidence, not remaining coding work.
+## Remaining three-hour work order
+
+1. **Release delivered:** use the [verified Cloudflare judges URL](https://stepsense-yolox-v2-preview.stepsense-dahacks.workers.dev/) at pinned source `df0ebaa`. PR #20 remains available for review/merge in the Congressional repository. Record this tested build, not another historical URL.
+2. **Phone rehearsal:** stationary and supervised, test cold Start, loading Cancel, Retry after a network failure, a supported visible object, Stop/navigation, and selected alerts. Record device/browser and honest misses. Do not test by walking into hazards.
+3. **Yash in parallel:** confirm eligibility/rights and complete truthful contribution/AI disclosures. Agents cannot attest to these personal facts.
+4. **Video:** use the [required-content recording checklist](demo.md), record the actual final build, upload publicly, and verify duration plus logged-out playback.
+5. **Application:** you review all actual fields and district instructions, submit, and retain receipt. Do not mark ready/submitted before that evidence exists.
+
+Keep optional Worker API, experimental depth and native features out of the primary demonstration unless independently verified. No new model training or visual redesign is needed for this deadline.

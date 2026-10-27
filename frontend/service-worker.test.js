@@ -48,7 +48,8 @@ test('model-neutral PiP precache installs only assets served by this baseline', 
   const w = worker();
   await w.dispatch('install');
   const [name, assets] = [...w.stores][0];
-  assert.match(name, /^myeyes-pwa-v14-clarity-eye$/);
+  assert.match(name, /^myeyes-pwa-v\d+-[a-z0-9-]+$/);
+  assert.notEqual(name, 'myeyes-pwa-v18-install-icons', 'submission fixes must migrate installed clients');
   const paths = [...assets.keys()].map(url => new URL(url).pathname);
   for (const path of ['/index.html', '/camera.js', '/picture-in-picture.js', '/local-detector.js', '/depth-ui.js']) assert.ok(paths.includes(path), path);
   assert.ok(paths.every(path => !/candidate|yolox|tracking/.test(path)), 'Removed experimental assets must not return through precache');
@@ -114,4 +115,23 @@ test('approved header logo is available offline immediately after installation',
   const response = await w.dispatch('fetch', { request: w.request('/icons/clarity-eye.png') });
   assert.ok(response, 'logo fetch is handled by the app shell cache');
   assert.equal(await response.text(), 'precache:/icons/clarity-eye.png');
+});
+
+// The production header requests this exact query-versioned asset.
+test('current animated header logo is available offline with its production query string', async () => {
+  const w = worker();
+  await w.dispatch('install');
+  w.setOffline(true);
+  const response = await w.dispatch('fetch', { request: w.request('/icons/eye_logo_smooth.gif?v=smooth-6') });
+  assert.ok(response, 'versioned header logo has an offline response');
+  assert.equal(await response.text(), 'precache:/icons/eye_logo_smooth.gif');
+});
+
+test('offline shell prefers the freshest exact query-versioned response before its precache fallback', async () => {
+  const w = worker();
+  await w.dispatch('install');
+  const request = w.request('/icons/eye_logo_smooth.gif?v=smooth-6');
+  assert.equal(await (await w.dispatch('fetch', { request })).text(), 'fresh network');
+  w.setOffline(true);
+  assert.equal(await (await w.dispatch('fetch', { request })).text(), 'fresh network');
 });
