@@ -1,0 +1,337 @@
+{
+  "source": "df0ebaa9bc235f52d698ff4804d8e377e8a72995",
+  "version": "97cde6a2-3249-40b2-bfff-19ee700a9ce3",
+  "base": "https://stepsense-yolox-v2-preview.stepsense-dahacks.workers.dev",
+  "results": [
+    {
+      "file": "app.js",
+      "bytes": 36670,
+      "sha256": "474c5999748502c8f4a3213a6bdf6cf03a5e49e28b778de6a8ac400c29dcaee2"
+    },
+    {
+      "file": "backend-detector.js",
+      "bytes": 7934,
+      "sha256": "7ae971dc81bac32fb5a21cf30965c7d4015523187a26e224121d74ecc5fff2a5"
+    },
+    {
+      "file": "camera.html",
+      "bytes": 12275,
+      "sha256": "e0ee3c93d70aba0b19c5d41fea2f503eb27c137aabf9ca4e7fd0af3090d92486"
+    },
+    {
+      "file": "camera.js",
+      "bytes": 31777,
+      "sha256": "05a2b74e175fef35af6df8af9cca6a912941cf068d640b3856f65ae730b8bfa2"
+    },
+    {
+      "file": "demo-scene.svg",
+      "bytes": 2225,
+      "sha256": "4d097faae85be4a02730541382f4abf18ad2687cb4c5273c5dd6d797913a6793"
+    },
+    {
+      "file": "depth-controller.js",
+      "bytes": 9886,
+      "sha256": "e2c9b0f9676d4fc8df1fc8b0721872008cfdc323e899ac1d5cc829b0da6a4ab8"
+    },
+    {
+      "file": "depth-geometry.js",
+      "bytes": 10881,
+      "sha256": "6cb89454e7fa1aed2d429c44d41a107a3d005c262d5d2fca3088771d84595680"
+    },
+    {
+      "file": "depth-model.js",
+      "bytes": 10506,
+      "sha256": "4445af53d09fe7d9ce0faf55ebf490a13e36165a8984019ae2e6462b80300072"
+    },
+    {
+      "file": "depth-sensors.js",
+      "bytes": 3903,
+      "sha256": "8f94092fe188bbd5eba32a44d5a79bf3031092321af17869e20917b9ba4f0d31"
+    },
+    {
+      "file": "depth-ui.js",
+      "bytes": 13188,
+      "sha256": "55cecd4d33b459d08d69d2b0ebcb7db28186384d6ad1ab4bbfab9edd520ea567"
+    },
+    {
+      "file": "gradient.js",
+      "bytes": 1465,
+      "sha256": "92ebd895ac17e18302928ab3914f35b5462382ad124245e2617d6a865f292473"
+    },
+    {
+      "file": "homePage.css",
+      "bytes": 52678,
+      "sha256": "b7e1baaefd9bb4e45ae96e01586a88df3d6c8ad1c00ffa63ec8f9f935da22770"
+    },
+    {
+      "file": "index.html",
+      "bytes": 65523,
+      "sha256": "064f64a3ad6d53122cc050ee99a04856dcc095af03588f8024e5187c04d5cfd0"
+    },
+    {
+      "file": "integration.css",
+      "bytes": 1686,
+      "sha256": "b581f48a9bf38e28b60277a049eeabd60e63326b96a2977d1cbfd731e2c7c8f1"
+    },
+    {
+      "file": "local-detector.js",
+      "bytes": 14086,
+      "sha256": "4e4a68ee223a59c35e628962d30f6ca92fc97e4b937b9af9ec7606874c52db2d"
+    },
+    {
+      "file": "logic.js",
+      "bytes": 3324,
+      "sha256": "eb4f9f5eb11e65dc2733e348c0e7842c15e8fc2782b9882adb19a0b10dcdc09a"
+    },
+    {
+      "file": "manifest.webmanifest",
+      "bytes": 853,
+      "sha256": "4fe33096bfcf335e560a6323914901d6a1af1efb98e62938721f117192995907"
+    },
+    {
+      "file": "object-alerts.js",
+      "bytes": 13870,
+      "sha256": "000a21a7d89da01b82cb0964b66394a33ac4988f8ec9572cc515aac699dcb335"
+    },
+    {
+      "file": "phone-notifications.js",
+      "bytes": 1492,
+      "sha256": "082ff2af2154dc18ba32bd7d61f3afff1fef206fdfe27cdc71a29b1413a89641"
+    },
+    {
+      "file": "picture-in-picture.js",
+      "bytes": 11048,
+      "sha256": "55d99b4842f14b76a68db55499adbd414e2bd5d9700a31e3c8fd5c6ea0bf6713"
+    },
+    {
+      "file": "pip-probe.js",
+      "bytes": 2000,
+      "sha256": "1aef00d21420979fbd0788b6fe7b1565746be7ba538edab9cf8d272e03c34f23"
+    },
+    {
+      "file": "pip-test.html",
+      "bytes": 2298,
+      "sha256": "92783d66c341d84e34cbc35d65412d0056372fd01f866679a1d7ed8dc547e7cf"
+    },
+    {
+      "file": "pip-test.js",
+      "bytes": 8318,
+      "sha256": "31b14536892cdff269b277131a77252bd9d713aec1d5487d26db8724d03bbcfe"
+    },
+    {
+      "file": "site.js",
+      "bytes": 7863,
+      "sha256": "3b7ed6bf39395f0c2148698f04c1334a13dd88404549903b8625f8e76ec4f6f8"
+    },
+    {
+      "file": "standalone.js",
+      "bytes": 4260,
+      "sha256": "f33236b32a811a1bfe36eec58141132f84f51579ba5c48d89e0a530236b971ef"
+    },
+    {
+      "file": "styles.css",
+      "bytes": 18625,
+      "sha256": "538443a4c8faa63d7610ace6c516d24415f749000d3af7d8b96d4e85c005876b"
+    },
+    {
+      "file": "sw.js",
+      "bytes": 3202,
+      "sha256": "6aa17c8262e95b5a41960518055a0fc2a144829dd261a6979a7693ff0326777f"
+    },
+    {
+      "file": "tracking.js",
+      "bytes": 6392,
+      "sha256": "14518281f7ea4c502f2969f00bf44b3d8a55cd0db1ac5f96177ab2981aff66de"
+    },
+    {
+      "file": "video-frames.js",
+      "bytes": 994,
+      "sha256": "526ccddec91eef82db2350eedd916ced9d13835ac331b9f47c27b0c5fd341604"
+    },
+    {
+      "file": "vendor-depth/JINJA-LICENSE",
+      "bytes": 1069,
+      "sha256": "d6e7b19451c1b3d1d66353bb4b1274138953b3bfd9ae60c56e77b1f548796982"
+    },
+    {
+      "file": "vendor-depth/ONNXRUNTIME-LICENSE",
+      "bytes": 1073,
+      "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+    },
+    {
+      "file": "vendor-depth/ONNXRUNTIME-NOTICES",
+      "bytes": 326866,
+      "sha256": "e9e90971a8e75a9a8ac0c6412e29c1202d079998389915aa485f46c816c3b4cc"
+    },
+    {
+      "file": "vendor-depth/TRANSFORMERS-LICENSE",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "file": "vendor-depth/depth-worker.js",
+      "bytes": 931,
+      "sha256": "fe8dfb69350010974881b9d4f67278b13419124fa0803837159a2449be3021a1"
+    },
+    {
+      "file": "vendor-depth/ort-wasm-simd-threaded.jsep.mjs",
+      "bytes": 44484,
+      "sha256": "08fb86ec433c78bfb032c5d84a68b8e8e5a8d81268fa39e24314179a5767a5b9"
+    },
+    {
+      "file": "vendor-depth/ort-wasm-simd-threaded.jsep.wasm",
+      "bytes": 21596019,
+      "sha256": "c46655e8a94afc45338d4cb2b840475f88e5012d524509916e505079c00bfa39"
+    },
+    {
+      "file": "vendor-depth/transformers.min.js",
+      "bytes": 871803,
+      "sha256": "489ae9fa3deae4eed28f83b9f94a32342c63cffdabd56ad990f76d28c858a1c2"
+    },
+    {
+      "file": "vendor/PROVENANCE.md",
+      "bytes": 3465,
+      "sha256": "bcb68cca1871ad7c53e9068f9323cc6bdcf29ae786880953ed8cbf19ee208bf4"
+    },
+    {
+      "file": "vendor/coco-ssd.min.js",
+      "bytes": 9299,
+      "sha256": "8875b8c1bb57723990c9d6506226e0e51cd21b8b6943eb53201086096de52df5"
+    },
+    {
+      "file": "vendor/tf-backend-wasm.min.js",
+      "bytes": 149861,
+      "sha256": "691bbec0ef8b5a7f17f212e9c5d85832030f90d030b46e99acb4dea1fb16f009"
+    },
+    {
+      "file": "vendor/tf.min.js",
+      "bytes": 1469843,
+      "sha256": "300dfae273d20b4046f46a06d735688f03675a807561e9bcb5f664eb2f3d2831"
+    },
+    {
+      "file": "vendor/tfjs-backend-wasm-simd.wasm",
+      "bytes": 424594,
+      "sha256": "77ebb28a6d34f371dbbf2086b7f2de8994acd8ea5a3cf1fa24d2c26c840cac7b"
+    },
+    {
+      "file": "vendor/tfjs-backend-wasm-threaded-simd.wasm",
+      "bytes": 435643,
+      "sha256": "c052228d4bef185c27bbe59a9e029570c78bbb9f08b3cb46b597851650373de2"
+    },
+    {
+      "file": "vendor/tfjs-backend-wasm.wasm",
+      "bytes": 311123,
+      "sha256": "70a5d516060464e5269f01c74bac1772d6b8ab6cb612acf16b5cdaf61f78d892"
+    },
+    {
+      "file": "vendor/model/group1-shard1of5",
+      "bytes": 4194304,
+      "sha256": "0e7af0f713e98521252321f7f84892c31cefccccec3ac64c84e5065b75ed5646"
+    },
+    {
+      "file": "vendor/model/group1-shard2of5",
+      "bytes": 4194304,
+      "sha256": "74cc6cfc2c4510c9cd81b8ad4cebf6f6a8f305119bb365ce0eb96276da38519a"
+    },
+    {
+      "file": "vendor/model/group1-shard3of5",
+      "bytes": 4194304,
+      "sha256": "50383033f893eae136392a403e8f70ade5efd90867df5695c4ca5ac640e14f38"
+    },
+    {
+      "file": "vendor/model/group1-shard4of5",
+      "bytes": 4194304,
+      "sha256": "d856dc534c780068bbf6c666ce1516df2c8433d87578aa31fcdf197de7058cc2"
+    },
+    {
+      "file": "vendor/model/group1-shard5of5",
+      "bytes": 1257312,
+      "sha256": "3d356f1fb6dfca6af78c56db34d9326706d0196e303f9de6b04f236ca79ed309"
+    },
+    {
+      "file": "vendor/model/model.json",
+      "bytes": 527315,
+      "sha256": "3770b2528339b1e3340cb74360e1e40401816b009779aeb8d0cce3a4353ea3a9"
+    },
+    {
+      "file": "vendor/licenses/coco-ssd-LICENSE",
+      "bytes": 11357,
+      "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd"
+    },
+    {
+      "file": "vendor/licenses/tensorflowjs-LICENSE",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "file": "sample/README.md",
+      "bytes": 2351,
+      "sha256": "ea0a3509f07b549b8438247f0d0295b03d784bee5c539f0a51b35589d4cfff91"
+    },
+    {
+      "file": "sample/index.html",
+      "bytes": 32756,
+      "sha256": "61409df11d1f95f4c45daaf7fa2b332a0f607c43b120f2b765fb1973cef41ffb"
+    },
+    {
+      "file": "sample/serve.mjs",
+      "bytes": 1405,
+      "sha256": "481480bb87b6774cec0594e390056dabe30346c5414a43bb6fa028c3784e1d49"
+    },
+    {
+      "file": "icons/apple-touch-icon.png",
+      "bytes": 10123,
+      "sha256": "b1b90737e2d561c1062a01f8f307af85c29677be0afefd3291730b438b1f260c"
+    },
+    {
+      "file": "icons/clarity-eye.png",
+      "bytes": 517326,
+      "sha256": "be2319576af5fed17dca061dc162469e3bb09e6cf5e311c39cbdfc07ab541dea"
+    },
+    {
+      "file": "icons/eye_logo_gif.gif",
+      "bytes": 80782,
+      "sha256": "8bba19f0fecbd00b1c5d641422ebfecab59fe66b1ad96465c74d64ae806255c3"
+    },
+    {
+      "file": "icons/eye_logo_smooth.gif",
+      "bytes": 583752,
+      "sha256": "0541a4b4b2ca3d15a8c7f6799b204d3cd4c1c5b42e105918775c95aac9cdbd7d"
+    },
+    {
+      "file": "icons/favicon-white.svg",
+      "bytes": 448,
+      "sha256": "00af2da654426c96a86aa787ad73b133c77d4fe7e30f37a10f22bab24e4d9ae2"
+    },
+    {
+      "file": "icons/icon-192.png",
+      "bytes": 14895,
+      "sha256": "ac3506f06f457d744c5de7b905daac4e0fd74484a4ac7dec94772dfffbfecafe"
+    },
+    {
+      "file": "icons/icon-512.png",
+      "bytes": 74367,
+      "sha256": "459570dec49fe689d9ba7db99be2a57a408371c35229dddc43b44b5f6591e2a2"
+    },
+    {
+      "file": "icons/icon-maskable-512.png",
+      "bytes": 51561,
+      "sha256": "3285c32fc0ca3108b4308a968e9190ae045d9704f43932936893b207f8eb0f68"
+    },
+    {
+      "file": "icons/logo-orange.svg",
+      "bytes": 410,
+      "sha256": "0c3ddf6b25ce357847eee191c45d60e620076bec01fb46b511805fcaace59a8a"
+    },
+    {
+      "file": "icons/logo.png",
+      "bytes": 398827,
+      "sha256": "61f441452a07ec4f2ebe5ed3067b3125b4cfac21c79903ead663bab28564db36"
+    },
+    {
+      "file": "icons/mainLogo.png",
+      "bytes": 517326,
+      "sha256": "be2319576af5fed17dca061dc162469e3bb09e6cf5e311c39cbdfc07ab541dea"
+    }
+  ]
+}

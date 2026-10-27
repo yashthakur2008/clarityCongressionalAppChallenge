@@ -562,7 +562,6 @@
       window.myEyesIssueFeed = { add: addIssueReport };
       const screens = [...document.querySelectorAll(".screen")];
       const navButtons = [...document.querySelectorAll(".nav-btn")];
-      let previewFallbackStream = null;
       let activePageTransitionCleanup = null;
       const detectionStatusLight = document.getElementById("detection-status-light");
       const setDetectionStatusLight = (isOn) => {
@@ -605,10 +604,6 @@
           // Navigation must still work if a phone/browser throws while releasing
           // the camera. Stop each stream defensively, then always switch screens.
           try { window.myEyesCamera?.stop(); } catch (error) { console.warn("Could not stop camera cleanly:", error); }
-          try {
-            previewFallbackStream?.getTracks().forEach((track) => track.stop());
-          } catch (error) { console.warn("Could not stop preview stream cleanly:", error); }
-          previewFallbackStream = null;
           setDetectionStatusLight(false);
           const video = document.getElementById("camera-video");
           if (video) video.srcObject = null;
@@ -1212,51 +1207,11 @@
       }
 
       document.getElementById("camera-start").addEventListener("click", async () => {
-        // The module owns scanning when it loaded. Keep a camera-preview fallback
-        // for a failed module download so Start still opens the browser permission prompt.
-        if (window.myEyesCamera || previewFallbackStream) return;
-        const status = document.getElementById("camera-status");
-        const startButton = document.getElementById("camera-start");
-        const stopButton = document.getElementById("camera-stop");
-        if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-          status.textContent = "Camera access needs HTTPS or localhost. Open this page from a secure address, then try again.";
-          return;
-        }
-        startButton.disabled = true;
-        status.textContent = "Requesting camera permission…";
-        try {
-          previewFallbackStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: "environment" } } });
-          const video = document.getElementById("camera-video");
-          video.srcObject = previewFallbackStream;
-          video.muted = true;
-          await video.play();
-          setDetectionStatusLight(true);
-          status.textContent = "Camera preview is on. Scanning could not load; refresh the page to retry detection.";
-          startButton.disabled = true;
-          stopButton.disabled = false;
-        } catch (error) {
-          previewFallbackStream?.getTracks().forEach((track) => track.stop());
-          previewFallbackStream = null;
-          setDetectionStatusLight(false);
-          startButton.disabled = false;
-          stopButton.disabled = true;
-          status.textContent = error.name === "NotAllowedError"
-            ? "Camera permission was denied. Allow camera access in your browser settings, then try again."
-            : error.name === "NotReadableError"
-              ? "Camera is busy. Close other apps using it, then try again."
-              : "Camera could not start. Check browser permissions and try again.";
-        }
-      });
-
-      document.getElementById("camera-stop").addEventListener("click", () => {
-        if (window.myEyesCamera || !previewFallbackStream) return;
-        previewFallbackStream.getTracks().forEach((track) => track.stop());
-        previewFallbackStream = null;
+        // Never present a model-less preview as a working obstacle scanner.
+        if (window.myEyesCamera) return;
         setDetectionStatusLight(false);
-        const video = document.getElementById("camera-video");
-        video.pause();
-        video.srcObject = null;
-        document.getElementById("camera-status").textContent = "Camera off. Scanner could not load; refresh the page to retry detection.";
+        document.getElementById("camera-status").textContent =
+          "Scanner could not load. Camera remains off. Refresh the page to retry.";
         document.getElementById("camera-start").disabled = false;
         document.getElementById("camera-stop").disabled = true;
       });
