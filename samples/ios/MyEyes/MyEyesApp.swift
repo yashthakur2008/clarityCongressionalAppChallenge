@@ -5,6 +5,8 @@ import SwiftUI
 struct MyEyesApp: App {
     @StateObject private var model = ScanModel()
     @Environment(\.scenePhase) private var scenePhase
+    /// First-launch state. Clearing this key replays the intro.
+    @AppStorage("clarity.introSeen") private var introSeen = false
 
     init() {
         PiPDiagnostics.log("app.launch", "backgroundModes=\(Bundle.main.object(forInfoDictionaryKey: "UIBackgroundModes") ?? [])")
@@ -22,8 +24,17 @@ struct MyEyesApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ScannerView(model: model)
-                .tint(.senseTeal)
+            ZStack {
+                ScannerView(model: model)
+                if !introSeen {
+                    IntroView {
+                        withAnimation(.easeInOut(duration: 0.35)) { introSeen = true }
+                    }
+                    .transition(.opacity)
+                    .zIndex(1)
+                }
+            }
+            .tint(.senseTeal)
                 .onChange(of: scenePhase) { phase in
                     PiPDiagnostics.log("scene.phase", "value=\(phase)")
                     switch phase {
