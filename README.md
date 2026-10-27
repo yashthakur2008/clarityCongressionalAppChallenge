@@ -1,8 +1,10 @@
-# Clarity · DAHacks26
+# Clarity · Congressional App Challenge 2026
 
-A camera-based obstacle alert **prototype** for De Anza Hacks 5.0, October 16–17, 2026. StepSense and Clarity names both remain in the app and repository.
+A camera-based obstacle alert **prototype** being prepared for the 2026 Congressional App Challenge, based on the earlier DAHacks project. Yash is the sole CAC entrant (confirmed October 26). Eligibility, inherited-work rights and individual contributions still require his confirmation; sole entrant does not imply sole authorship of inherited work. StepSense and Clarity names remain in historical materials.
 
-**[Judge quick start and demo guide](docs/JUDGES.md)** · [Native iPhone judge guide](samples/ios/JUDGES.md) · [Devpost](https://dahacks5.devpost.com/) · [Rules](https://dahacks5.devpost.com/rules) · [Schedule](https://dahacks5.devpost.com/details/dates)
+**[Judge quick start and demo guide](docs/JUDGES.md)** · [Native iPhone judge guide](samples/ios/JUDGES.md) · [CAC checklist](docs/demo.md) · [Submission readiness](docs/SUBMISSION_READINESS.md) · [Official 2026 rules](https://www.congressionalappchallenge.us/wp-content/uploads/2026/05/2026-CAC-Rules.pdf)
+
+> **October 26 submission sprint:** the original 17 frontend failures are fixed in [PR #20](https://github.com/yashthakur2008/clarityCongressionalAppChallenge/pull/20). Actual browser online/offline model startup and lifecycle checks passed using a virtual camera. The approved Cloudflare judges URL now serves verified source `df0ebaa`; all 66 public assets match. See the [release evidence](docs/CAC_RELEASE_2026-10-26.md) and [remaining submission gates](docs/SUBMISSION_READINESS.md) before recording.
 
 ## Try the browser app
 
@@ -14,7 +16,7 @@ Requires **Node.js 24+**. From the repository root:
 npm --prefix frontend start
 ```
 
-Open **http://127.0.0.1:5180/**, select **Camera**, then **Start** and allow camera access. No frontend install, build, account, or backend is needed for the default object detector. It loads bundled **COCO-SSD** through TensorFlow.js/WebAssembly and analyzes frames locally. Initial asset loading and device speed affect startup and responsiveness. The browser baseline is distinct from the experimental native YOLOX candidate. See [experimental model evidence and limitations](docs/v2-testing/README.md).
+Open **http://127.0.0.1:5180/**, complete first-run setup if shown, then select **Start scanning** and allow camera access after model loading. No frontend install, build, account, or backend is needed for the default object detector. It loads bundled **COCO-SSD** through TensorFlow.js/WebAssembly and analyzes frames locally. Initial asset loading and device speed affect startup and responsiveness. The browser baseline is distinct from the experimental native YOLOX candidate. See [experimental model evidence and limitations](docs/v2-testing/README.md).
 
 A phone needs trusted HTTPS, not the laptop's plain HTTP LAN address. See [phone launch](docs/PHONE_LAUNCH.md). The [judge guide](docs/JUDGES.md) separates the hosted preview, local source, optional API paths, and simulated walkthrough.
 
@@ -69,6 +71,6 @@ npm run test:native
 - `tests/e2e/`: [manual cross-app acceptance checklist](tests/e2e/README.md).
 - `infra/`: deployment notes. `.github/`: contribution checklist.
 
-Recorded submission deadline: **October 17, 2026 at 2:00 PM PDT**. The rubric weights functionality, originality, **Modern Life** theme, and presentation equally at **25% each**. See [demo/submission checklist](docs/demo.md), [team workflow](docs/team.md), and [attribution](ATTRIBUTION.md). Confirm conflicting eligibility/team-size wording with organizers. No accuracy or competition outcome is guaranteed.
+Submission deadline: **October 26, 2026 at 9:00 AM PDT / 12:00 PM EDT**. Target Sunday evening submission. CAC considers idea quality, implementation/user experience and coding skill; the old Modern Life theme and 25%-each rubric do not apply. See the [requirements checklist](docs/demo.md), [readiness report](docs/SUBMISSION_READINESS.md), [team workflow](docs/team.md) and [attribution](ATTRIBUTION.md). The required video is **public on YouTube/Vimeo and 1–3 minutes**. Full AI disclosure and significant student contributions are required. No submission or eligibility approval is claimed.
 
 Never commit credentials, personal data, local environment files, or generated Wrangler state. The root ignore excludes `worker/.wrangler/`; removing it from tracking does not erase earlier Git history.

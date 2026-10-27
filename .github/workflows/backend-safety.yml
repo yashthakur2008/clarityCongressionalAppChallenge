@@ -1,0 +1,31 @@
+name: Backend dependency safety
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/**', '.github/workflows/backend-safety.yml']
+  pull_request:
+    paths: ['backend/**', '.github/workflows/backend-safety.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  backend-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install locked backend dependencies
+        run: npm ci --prefix backend
+      - name: Check backend syntax
+        run: npm --prefix backend run check
+      - name: Run backend regression tests
+        run: npm --prefix backend test
+      - name: Audit production dependencies
+        run: npm --prefix backend audit --omit=dev

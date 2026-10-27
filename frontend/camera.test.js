@@ -663,3 +663,73 @@ test('dedicated startup screen exposes Cancel/Retry and disappears before camera
     assert.equal(feature.state.phase, 'off');
   } finally { feature.destroy(); }
 });
+
+test('Cancel settles startup even when preparation ignores abort and never resolves', async () => {
+  const f = fixture();
+  f.feature.registerDetector({ prepare: () => new Promise(() => {}), async start() {} });
+  const starting = f.feature.start();
+  f.feature.stop();
+  await starting;
+  assert.equal(f.feature.pending, null);
+  assert.equal(f.feature.state.phase, 'off');
+  assert.equal(f.calls.length, 0);
+});
+
+test('timed-out preparation cannot change a retry status or release its pending lock', async () => {
+  const attempts = [deferred(), deferred()];
+  const contexts = [];
+  const f = fixture();
+  f.feature.registerDetector({ prepare(context) {
+    contexts.push(context);
+    return attempts[contexts.length - 1].promise;
+  }, async start() {} });
+  const first = f.feature.start();
+  f.advance(120000);
+  await first;
+  assert.equal(contexts[0].signal.aborted, true);
+  const retry = f.feature.start();
+  contexts[1].onStatus('Loading retry model');
+  contexts[0].onStatus('Stale model ready');
+  attempts[0].resolve();
+  await Promise.resolve();
+  await f.feature.start();
+  assert.equal(contexts.length, 2);
+  assert.equal(f.feature.state.camera, 'Loading retry model');
+  assert.equal(f.feature.state.phase, 'loading');
+  assert.equal(f.calls.length, 0);
+  attempts[1].resolve();
+  await retry;
+  assert.equal(f.calls.length, 1);
+  contexts[1].onStatus('Late preparation status');
+  assert.equal(f.feature.state.camera, 'Camera active.');
+  f.feature.stop();
+});
+
+test('hidden page cannot request permission when preparation finishes before visibility event', async () => {
+  const ready = deferred();
+  let visible = true;
+  const f = fixture({ isVisible: () => visible });
+  f.feature.registerDetector({ prepare: () => ready.promise, async start() {} });
+  const starting = f.feature.start();
+  visible = false;
+  ready.resolve();
+  await starting;
+  assert.equal(f.calls.length, 0);
+  assert.equal(f.feature.state.phase, 'off');
+  assert.equal(f.feature.pending, null);
+});
+
+test('hidden page releases late permission tracks before playback without waiting for visibility event', async () => {
+  const permission = deferred();
+  let visible = true, plays = 0;
+  const f = fixture({ isVisible: () => visible, mediaDevices: { getUserMedia: () => permission.promise } });
+  f.video.play = async () => { plays++; };
+  const starting = f.feature.start();
+  visible = false;
+  permission.resolve(f.stream);
+  await starting;
+  assert.equal(f.feature.state.phase, 'off');
+  assert.equal(plays, 0);
+  assert.ok(f.tracks.every(track => track.stopped));
+  assert.ok(!f.events.some(event => event.name === 'camera:started'));
+});

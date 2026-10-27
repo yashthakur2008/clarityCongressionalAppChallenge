@@ -12,7 +12,9 @@ export function mountSite(doc = document, platform = window, detector = createBa
   const feature = mountCamera(get('camera-panel'), platform, { onState(state) {
     get('voice').checked = state.speechEnabled;
     get('voice').disabled = !state.speechSupported;
-    get('app-status').textContent = state.phase === 'active' ? 'Camera active' : state.phase === 'requesting' ? 'Camera starting' : 'Camera off';
+    get('app-status').textContent = state.phase === 'active' ? 'Camera active'
+      : state.phase === 'loading' ? 'Loading detection model'
+      : state.phase === 'requesting' ? 'Camera starting' : 'Camera off';
     get('toast').setAttribute('aria-live', state.announcements === 'screen-reader' ? 'polite' : 'off');
   } });
   feature.registerDetector(detector);

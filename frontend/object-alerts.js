@@ -118,25 +118,30 @@ export function createObjectAlerts({ platform = globalThis, readPreferences = ()
     const prefs = readPreferences();
     const notifications = () => readPreferences().notifications === true;
     const soundTask = playSound(prefs, signal);
-    const vibrationValue = pattern();
+    let vibrationValue = false;
     let notification = false, vibration = false;
     if (notifications()) {
-      notification = await notifyPhone(message, platform, { signal, enabled: notifications, vibration: () => vibrationValue,
+      notification = await notifyPhone(message, platform, { signal, enabled: notifications, vibration: () => (vibrationValue = pattern()),
         ...(test ? { title: 'Clarity: test alert', tag: 'clarity-test-alert' } : {}) });
     }
     if (signal.aborted) return { notification: false, vibration: false };
     // Avoid a double vibration: the notification owns its pattern when posted.
     // Otherwise use the page API, which some browsers block in the background.
     if (notification) vibration = Boolean(vibrationValue);
-    else if (vibrationValue) {
+    else if ((vibrationValue = pattern())) {
       try { vibration = platform.navigator?.vibrate?.(vibrationValue) === true; } catch { /* Visible and spoken alerts remain. */ }
     }
     const sound = await soundTask;
-    const delivery = { notification, vibration, sound };
+    // Preserve the notification/vibration API for callers without sound preferences.
+    const delivery = { notification, vibration, ...(prefs.sound !== undefined ? { sound } : {}) };
     onDelivery(delivery);
     return delivery;
   }
-  return { send, cancel };
+  function resetCustomSound() {
+    customSoundPromise = null;
+    customSoundBuffer = null;
+  }
+  return { send, cancel, unlockSound, resetCustomSound };
 }
 
 export function mountObjectAlerts(doc, platform, feature) {
@@ -183,13 +188,13 @@ export function mountObjectAlerts(doc, platform, feature) {
   } });
   if (get('notifications')) get('notifications').checked = stored('clearpath-notifications', 'true') === 'true';
   if (get('vibrate')) get('vibrate').checked = stored('clearpath-vibrate', 'true') === 'true';
-  doc.addEventListener('pointerdown', unlockSound, { capture: true, passive: true });
-  doc.addEventListener('keydown', unlockSound, { capture: true });
+  doc.addEventListener('pointerdown', alerts.unlockSound, { capture: true, passive: true });
+  doc.addEventListener('keydown', alerts.unlockSound, { capture: true });
   for (const [id, key] of [['notifications', 'clearpath-notifications'], ['vibrate', 'clearpath-vibrate']]) {
     get(id)?.addEventListener('change', () => { store(key, get(id).checked); alerts.cancel(); refresh(); });
   }
   get('alert')?.addEventListener('change', () => { alerts.cancel(); refresh(); });
-  get('alertSound')?.addEventListener('change', () => { customSoundPromise = null; customSoundBuffer = null; });
+  get('alertSound')?.addEventListener('change', alerts.resetCustomSound);
   get('vibrationStrength')?.addEventListener('input', () => alerts.cancel());
   get('alertRepeatCount')?.addEventListener('change', () => alerts.cancel());
   platform.addEventListener('camera:obstacle', event => {

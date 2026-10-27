@@ -52,7 +52,7 @@ export function drawDetectionOverlay(canvas, video, detections, pixelRatio = 1, 
     context.strokeStyle = near ? '#ffd43b' : '#10251a';
     context.lineWidth = 2;
     context.strokeRect(box.x, box.y, box.width, box.height);
-    const label = `${near ? 'NEAR' : 'FAR'} · ${detection.label} ${Math.round(detection.confidence * 100)}%`;
+    const label = `${near ? 'NEAR - ' : ''}${detection.label} ${Math.round(detection.confidence * 100)}%`;
     context.font = '600 13px system-ui, sans-serif';
     const labelWidth = Math.min(fit.width, context.measureText(label).width + 12);
     const x = Math.max(fit.x, Math.min(box.x, fit.x + fit.width - labelWidth));
